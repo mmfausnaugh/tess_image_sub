@@ -1,4 +1,4 @@
-Roughly speaking, I am using directories to organize things instead of databases. This is working reasonably well on our server. I have textfiles that list image names and dates in each directory, and I use grep to check if files are in a given directory based on the text file.
+Roughly speaking, I am using directories to organize things instead of databases. This is working reasonably well on our server. I have textfiles that list image names and dates in each directory, and I use grep to check if files are in a given directory based on the text file. I think the differencing part is not yet I/O bound. There was also some tuning of our file system (which is ZFS) that was being done to improve things. We have a TB of memory and I think some of this was set up to exploit ZFS caching.
 
 The directories also handle multiprocessing.  In TESS EM2, they look like this:
 
@@ -39,7 +39,7 @@ cd /data/tess/image_sub/sector73
 ```
 This assumes you have made a reference image. I do this in o1a these days, because the point is to run photometry every week on new transients. (Though I am behind on this.)  I can talk about making a reference at some point.
 
-photometry is a little more complicated, either we are running en masse from an existing catalog, or running a hand-made list. There is another package to translate RA/Dec into TESS coordinates and make a `phot.data` file. A peak at how this works is in the phot_scripts. When doing things by hand, I use functions in `do_phot_em2.sh` and similar.
+photometry is a little more complicated, either we are running en masse from an existing catalog, or running a hand-made list. There is another package to translate RA/Dec into TESS coordinates and make a `phot.data` file. A peak at how this works is in the phot_scripts. When doing things by hand, I use functions in `do_phot_em2.sh` and similar. I believe the photometry is I/O bound, and I'm hoping at some point to rewrite this to be faster (needs major changes to the original C code).
 
 Hopefully enough to get started.
 
