@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+sector=$(pwd | awk -F/ '{print $5}')
+camccd=$(pwd | awk -F/ '{print $6}')
+cmd=$(for i in $(ls conv_tess*-00*[0-9][0-9][0-9][047]0-*cal.fits); do
+    echo "$i -region /pdo/users/faus/image_sub/pipeline/apertures/${sector}/${camccd}/coa_phot.reg -region lc_discovery/phot.reg";done)
+
+echo $sector
+echo $camccd
+ds9 ref.fits -region /pdo/users/faus/image_sub/pipeline/apertures/${sector}/${camccd}/coa_phot.reg -region lc_discovery/phot.reg $cmd -scale zscale -match scale&
+
+cmd2=$(for i in $(ls interp_tess*-00*[0-9][0-9][0-9][047]0-*cal.fits); do
+    echo "$i -region /pdo/users/faus/image_sub/pipeline/apertures/${sector}/${camccd}/coa_phot.reg -region lc_discovery/phot.reg";done)
+
+ds9 ref.fits -region /pdo/users/faus/image_sub/pipeline/apertures/${sector}/${camccd}/coa_phot.reg -region lc_discovery/phot.reg $cmd2 -scale zscale -match scale&

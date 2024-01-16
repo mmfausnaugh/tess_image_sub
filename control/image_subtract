@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+#run subtraction
+for i in 1 2 3 4; do
+    for j in 1 2 3 4; do
+	cd cam${i}_ccd${j}
+	~/isis/subtract.csh &
+	cd ..
+    done
+done
+
+wait
+
+#remove straps
+for i in 1 2 3 4; do
+    for j in 1 2 3 4; do
+	cd cam${i}_ccd${j}
+	python ~/image_sub/pipeline/util/correct_straps.py &
+	cd ..
+    done
+done
+
+wait
+
+
+#median filter to remove scattered light residuals2
+for i in 1 2 3 4; do
+    for j in 1 2 3 4; do
+	cd cam${i}_ccd${j}
+	python ~/image_sub/pipeline/util/median_filter_diff_row_col.py &
+	cd ..
+    done
+done
+
+wait

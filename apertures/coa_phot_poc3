@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+for i in 2 4 6; do
+    cd sector${i}
+    for cam in 1 2 3 4; do
+	for ccd in 1 2 3 4; do
+	    python ../coa_phot.py --infile cam${cam}_ccd${ccd}/coa_output.txt --image /scratch/faus/image_sub/sector${i}/cam${cam}_ccd${ccd}/ref.fits --outdir .
+	  
+
+
+	done
+    done
+    cd ..
+	
+done

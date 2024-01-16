@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+dstem="/data/tess2/image_sub/"
+for s in $(ls $dstem | grep 'sector'); do 
+#for s in "sector02" ; do
+    for i in 1 2 3 4; do
+	for j in 1 2 3 4; do
+	    #for lcdir in $(ls "$dstem""$s""/cam$i""_ccd$j" | grep 'lc_'); do
+	    for lcdir in lc_gaia_vars; do
+		duse="$dstem""$s""/cam$i""_ccd$j""/$lcdir"
+		bkg_duse="$dstem""$s""/cam$i""_ccd$j""/bkg_phot/$lcdir"
+		N_lc=$(ls "$duse""/lc"* | wc | awk '{print $1}')
+		N_phot=$(wc "$duse""/phot.data" | awk '{print $1}')
+
+		N_bkg_lc=$(ls "$bkg_duse""/lc"* | wc | awk '{print $1}')
+		N_bkg_phot=$(wc "$bkg_duse""/phot.data" | awk '{print $1}')
+
+		echo "$s cam$i ccd$j $lcdir $N_lc $N_bkg_lc $N_phot $N_bkg_phot"
+
+	    done
+	done
+    done
+done

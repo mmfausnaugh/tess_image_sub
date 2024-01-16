@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+dstem="/data/tess2/image_sub/"
+for s in $(ls $dstem | grep 'sector'); do 
+#for s in "sector02" ; do
+    for i in 1 2 3 4; do
+	for j in 1 2 3 4; do
+	    duse="$dstem""/$s""/cam$i""_ccd$j"
+	    if [ -e "$duse""/phot.data" ]; then
+		echo "$s cam$i ccd$j phot.data exists"
+	    fi
+	    
+	    nlc=$(ls "$duse""/lc" | wc | awk '{print $1}')
+	    if [ $nlc -gt 0  ]; then
+		echo "$s cam$i ccd$j lc is not empty"
+	    fi
+
+	done
+    done
+done
