@@ -1,0 +1,342 @@
+#!/usr/bin/env bash
+
+dstem=/data/tess/image_sub
+
+#2018fhw, sector1 cam4 ccd1
+#use _no_smooth directory
+cd "$dstem"/sector01/cam4_ccd1_no_smooth
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2018fhw --trend lc_discovery/lc_detrend/lc0012.733.802 --t0 1327.9 --t1 1339.3 --show --smooth_width 50 --save_plot
+cp lc_discovery/lc_2018fhw_detrended.png ~/image_sub/snIa_detrend_plots/lc_2018fhw_detrended_s01.png
+cp lc_discovery/lc_2018fhw_detrended.pdf ~/image_sub/snIa_detrend_plots/lc_2018fhw_detrended_s01.pdf
+clean_lc.py lc_discovery/lc_2018fhw_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2018fhw_detrended_cleaned
+#sector2 cam4 ccd1
+#use _no_smooth directory
+cd "$dstem"/sector02/cam4_ccd1_no_smooth
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_postdiscovery/lc_2018fhw --trend lc_postdiscovery/lc_detrend/lc1000.1489.288 --t0 1368.0 --t1 1370 --show --smooth_width 150 --save_plot
+cp lc_postdiscovery/lc_2018fhw_detrended.png ~/image_sub/snIa_detrend_plots/lc_2018fhw_detrended_s02.png
+cp lc_postdiscovery/lc_2018fhw_detrended.pdf ~/image_sub/snIa_detrend_plots/lc_2018fhw_detrended_s02.pdf
+clean_lc.py lc_postdiscovery/lc_2018fhw_detrended
+plot_TNS_cleaned_lc.py --bkg lc_postdiscovery/lc_2018fhw_detrended_cleaned
+
+#2018fvi, sector 1, cam3_ccd4 
+#fainter "complex", up and to the left of the SN.  Does better than the bright star
+cd "$dstem"/sector01/cam3_ccd4
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_prediscovery/lc_2018fvi --trend lc_prediscovery/lc_detrend/lc0035.939.1796  --t0 1329 --t1 1360 --show --save_plot --smooth_width 50
+cp lc_prediscovery/lc_2018fvi_detrended.png ~/image_sub/snIa_detrend_plots/lc_2018fvi_detrended_s01.png
+cp lc_prediscovery/lc_2018fvi_detrended.pdf ~/image_sub/snIa_detrend_plots/lc_2018fvi_detrended_s01.pdf
+clean_lc.py lc_prediscovery/lc_2018fvi_detrended
+plot_TNS_cleaned_lc.py --bkg lc_prediscovery/lc_2018fvi_detrended_cleaned
+#2018fvi, sector 2, cam3_ccd3
+#this is the bright star, fit to just the very end of the orbit.
+cd "$dstem"/sector02/cam3_ccd3
+ python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2018fvi --trend lc_discovery/lc_detrend/lc0028.1294.1824 --t0 1376.8 --t1 1382 --show --save_plot
+cp lc_discovery/lc_2018fvi_detrended.png ~/image_sub/snIa_detrend_plots/lc_2018fvi_detrended_s02.png
+cp lc_discovery/lc_2018fvi_detrended.pdf ~/image_sub/snIa_detrend_plots/lc_2018fvi_detrended_s02.pdf
+clean_lc.py lc_discovery/lc_2018fvi_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2018fvi_detrended_cleaned
+#coords slightly off of star center
+# python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2018fvi --trend lc_discovery/lc_detrend/lc0017.1293.1825 --t0 1376.8 --t1 1382 --show --save_plot
+
+
+#2018hib, sector3  cam2 ccd2
+cd "$dstem"/sector03/cam2_ccd2
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2018hib --trend lc_discovery/lc_detrend/lc0001.2085.1127 --t0 1385.5 --t1 1393.6 --show --save_plot
+cp lc_discovery/lc_2018hib_detrended.png ~/image_sub/snIa_detrend_plots/lc_2018hib_detrended_s03.png
+cp lc_discovery/lc_2018hib_detrended.pdf ~/image_sub/snIa_detrend_plots/lc_2018hib_detrended_s03.pdf
+clean_lc.py lc_discovery/lc_2018hib_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2018hib_detrended_cleaned
+#2018hib, sector4  cam2 ccd1--doesn't work, use the old (offset) light curve
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_postdiscovery/lc_2018hib --trend lc_trend/lc0013.948.1276 --t0 1410 --t1 1419 --show
+#retried and this looks OK:
+cd "$dstem"/sector04/cam2_ccd1
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_postdiscovery/lc_2018hib --trend lc_postdiscovery/lc_detrend/lc0003.952.1281 --t0 1412.33 --t1 1417.2 --show --save_plot
+cp lc_postdiscovery/lc_2018hib_detrended.png ~/image_sub/snIa_detrend_plots/lc_2018hib_detrended_s04.png
+cp lc_postdiscovery/lc_2018hib_detrended.pdf ~/image_sub/snIa_detrend_plots/lc_2018hib_detrended_s04.pdf
+clean_lc.py lc_postdiscovery/lc_2018hib_detrended
+plot_TNS_cleaned_lc.py --bkg lc_postdiscovery/lc_2018hib_detrended_cleaned
+
+#2018hgc, sector3  cam1 ccd4---doesn't work
+#didn't bother to retry
+#cd "$dstem"/sector03/cam1_ccd4
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2018hgc --trend lc_discovery/lc_detrend/lc0006.370.110 --t0 1392 --t1 1395 --show
+
+#2018hss sector3 cam3 ccd4
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc/lc_2018hss --trend lc/lc0036.1035.891 --t0 1300 --t1 1450 --show  
+#I like the nearrby fainter star, for some reason.  
+#However, this sector is too early and there is no signal
+#cd "$dstem"/sector03/cam3_ccd4
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_prediscovery/lc_2018hss --trend lc_prediscovery/lc_detrend/lc0029.1043.888 --t0 1396 --t1 1407 --show --smooth_width 50
+#2018hss sector4 cam3_ccd3_no_smooth   
+#*****Use no_smooth!!!
+#note that a big issue here is the pointing offset of s4---arguably I should jsut cut that
+cd "$dstem"/sector04/cam3_ccd3_no_smooth_2018hss
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2018hss --trend lc_discovery/lc_detrend/lc0005.1753.1072 --t0 1405 --t1 1419 --show    --smooth_width 50 --save_plot
+cp lc_discovery/lc_2018hss_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_discovery/lc_2018hss_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_discovery/lc_2018hss_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2018hss_detrended_cleaned
+
+#2018hyy sector4 cam1 ccd4  works awesome, except, use the "old index" directory
+##Doesn't actually need it, I thinks
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2018hyy --trend lc_discovery//lc_detrend/lc0005.283.936 --t0 1405 --t1 1419 --show --smooth_width 50
+
+
+#2018hkx sector4 cam4 ccd2  #doesn't work
+#didn't bother to retry
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_postdiscovery/lc_2018hkx --trend lc_postdiscovery/lc_detrend/lc0006.1601.855 --t0 1424.09 --t1 1425.65 --show &
+
+#2018ioa sector4 cam3 ccd1;  works well!
+cd "$dstem"/sector04/cam3_ccd1
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_prediscovery/lc_2018ioa --trend lc_prediscovery/lc_detrend/lc0024.1083.995 --t0 1405 --t1 1430 --show --smooth_width 50 --save_plot --clip_yscale
+cp lc_prediscovery/lc_2018ioa_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_prediscovery/lc_2018ioa_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_prediscovery/lc_2018ioa_detrended
+plot_TNS_cleaned_lc.py --bkg lc_prediscovery/lc_2018ioa_detrended_cleaned
+
+#2018kfv sector6 cam1 ccd4; works well!
+cd "$dstem"/sector06/cam1_ccd4
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2018kfv --trend lc_discovery/lc_2018kfv_detrend/lc0011.869.759 --t0 1486 --t1 1491 --show --save_plot
+cp lc_discovery/lc_2018kfv_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_discovery/lc_2018kfv_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_discovery/lc_2018kfv_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2018kfv_detrended_cleaned
+
+#############################
+##UDPATE:  sept 2021
+###########################
+ #2018lla, sector06/cam1_ccd4
+#couldn't disentangle from the nearby star, downgrading to no signal
+#this is the star, FWIW
+#cd "$dstem"/sector06/cam1_ccd4
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2018lla --trend lc_discovery/lc_2018lla_detrend/lc0007.526.2038 --t0 1467 --t1 1477.5 --show --smooth_width 50
+
+
+#2019mue sector14/cam2_ccd4
+#two rounds on two different stars.  one is faint and photometry had to be done manually.  Not a great source, overall
+#look for lc_2019mue_detrended_detrended output, 
+#renamed to lc_2019mue_detrended-detrended for clean_lc.py
+#down graded to no signal, because so bad
+###round 1, faint source to the right in the ref image
+#cd "$dstem"/sector14/cam2_ccd4
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2019mue --trend lc_discovery/lc_detrend/lc_manual_detrend.812.1804  --t0 1683  --t1 1696 --show --smooth_width 50
+###round 2, bright source to the top left in the ref image
+#cd "$dstem"/sector14/cam1_ccd4
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2019mue_detrended --trend lc_discovery/lc_detrend/lc0022.804.1808 --t0 1683  --t1 1696 --show --smooth_width 50
+
+#2019pnw sector15/cam2_ccd1
+#downgrading to no signal
+#better than expected---publishable, but a bad source
+#cd "$dstem"/sector15/cam2_ccd1
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2019pnw --trend lc_discovery/lc_detrend/lc0000.1470.1183 --t0 1711  --t1 1737 --show --smooth_width 25
+
+#2019prw sector15/cam2_ccd2
+#***this is the nearest star, but didn't work.
+#cd "$dstem"/sector15/cam2_ccd2
+# python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2019prw --trend lc_discovery/lc_detrend/lc0007.2086.1087 --t0 1725  --t1 1734.5 --show --smooth_width 50
+
+#2019ptv sector15/cam2_ccd3
+#this is the nearest star
+#cd "$dstem"/sector15/cam2_ccd3
+# python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2019ptv --trend lc_discovery/lc_detrend/lc0013.1779.1304 --t0 1710  --t1 1724.5 --show --smooth_width 50
+#sector16/cam2_ccd3
+#cd "$dstem"/sector16/cam2_ccd3
+# python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_postdiscovery/lc_2019ptv --trend lc_postdiscovery/lc_detrend/lc0014.183.1801 --t0 1736  --t1 1765 --show --smooth_width 50
+#2019qmm sector16/cam2_ccd2
+#down grade to no signa
+
+
+#2019qsc sector16/cam4_ccd1
+#well enough to publish, but probably not a good source everall
+cd "$dstem"/sector16/cam4_ccd1
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2019qsc --trend lc_discovery/lc_detrend/lc0008.1738.696  --t0 1738  --t1 1747.8 --show --smooth_width 50 --save_plot
+cp lc_discovery/lc_2019qsc_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_discovery/lc_2019qsc_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_discovery/lc_2019qsc_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2019qsc_detrended_cleaned
+
+#2019ulr sector18/cam1_ccd1;  the star just adds noise, light curve is fine without the correction.
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2019ulr --trend lc_discovery#$/lc_detrend/lc0003.736.878 --t0 1789  --t1 1800 --show --smooth_width 50
+
+#2020to  sector20/cam1_ccd2
+#tough EB.  this isn't bad all things together---can certainly publish.  probably not bright enough to get parameters, though
+cd "$dstem"/sector20/cam1_ccd2
+ python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2020to --trend lc_discovery/lc_detrend_2020to/lc0017.349.1118  --t0 1842  --t1 1880 --show --smooth_width 4 --save_plot --clip_yscale
+cp lc_discovery/lc_2020to_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_discovery/lc_2020to_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_discovery/lc_2020to_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2019to_detrended_cleaned
+
+#2020wd  sector20/cam1_ccd2
+#**I think it is too closely bleneded.  this is the nearest one, but the rms is a mess nearby
+#cd "$dstem"/sector20/cam1_ccd2
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2020wd --trend lc_discovery/lc_detrend_2020wd/lc0006.1288.1900  --t0 1842  --t1 1860 --show --smooth_width 50
+#clean_lc.py lc_discovery/lc_2020wd_detrended
+
+#2020kbq sector25/cam1_ccd1
+#**this is the nearest star, but didn't work---it's just too close
+#cd "$dstem"/sector25/cam1_ccd1
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2020kbq --trend lc_discovery/lc_detrend/lc0002.1371.1245  --t0 1982  --t1 2010 --show --smooth_width 50
+
+#2020npk sector26/cam1_ccd2. works pretty well!
+cd "$dstem"/sector26/cam1_ccd2
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2020npk --trend lc_discovery/lc_detrend/lc0027.454.1034 --t0 2010 --t1 2023 --show --smooth_width 50 --save_plot
+cp lc_discovery/lc_2020npk_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_discovery/lc_2020npk_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_discovery/lc_2020npk_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2020npk_detrended_cleaned
+
+#2020zjf sector31/cam1_ccd3
+#remarkably, this removes most of the star signal and recovers some SN.  it is still badly blended with a closer bright star (this is top left, but second farthest source), so wont' be great overall
+#I believe the story is that the SN signal is in the background of the farther source
+cd "$dstem"/sector31/cam1_ccd3
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2020zjf --trend lc_discovery/lc_detrend/lc0004.689.1698 --t0 2162  --t1 2165 --show --smooth_width 50 --save_plot --clip_yscale
+cp lc_discovery/lc_2020zjf_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_discovery/lc_2020zjf_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_discovery/lc_2020zjf_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2020zjf_detrended_cleaned
+
+#2021bnd sector34/cam1_ccd2
+#***downgrading to no signal---below is teh closest star, but very meh
+#cd "$dstem"/sector34/cam1_ccd2
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2021bnd --trend lc_discovery/lc_detrend/lc0005.907.998 --t0 2228   --t1 2241 --show --smooth_width 50
+
+#2021bix sector34/cam2_ccd2
+#it's an improvement, but still not a very compeling source.
+#note that had to do manual coordinates for the photometry
+cd "$dstem"/sector34/cam2_ccd2
+ python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2021bix --trend lc_discovery/lc_detrend/lc_manual.111.1718  --t0 2228   --t1 2241 --show --smooth_width 11 --save_plot
+cp lc_discovery/lc_2021bix_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_discovery/lc_2021bix_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_discovery/lc_2021bix_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2021bix_detrended_cleaned
+
+#2021caf sector34/cam2_ccd3
+#defintely not bad, but not a great source anyway
+cd "$dstem"/sector34/cam2_ccd3
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2021caf --trend lc_discovery/lc_detrend/lc_manual.1883.1155  --t0 2228   --t1 2241 --show --smooth_width 150 --save_plot
+cp lc_discovery/lc_2021caf_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_discovery/lc_2021caf_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_discovery/lc_2021caf_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2021caf_detrended_cleaned
+
+#2021udg sector40/cam1_ccd1
+#gotta do it for the precovery---will be hard to contrain t0 without the first set of data.  
+#This works well!
+cd "$dstem"/sector40/cam1_ccd1
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_prediscovery/lc_2021udg --trend lc_prediscovery/lc_detrend/lc0022.472.585  --t0 2404.5   --t1 2414.2  --show --smooth_width 50 --save_plot
+cp lc_prediscovery/lc_2021udg_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_prediscovery/lc_2021udg_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_prediscovery/lc_2021udg_detrended
+plot_TNS_cleaned_lc.py --bkg lc_prediscovery/lc_2021udg_detrended_cleaned
+
+#2019lrj sector13/cam2_ccd3
+cd "$dstem"/sector13/cam2_ccd3
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_prediscovery/lc_2019lrj --trend lc_prediscovery/lc_detrend/lc0013.329.717  --t0 1650   --t1 1700  --show --smooth_width 1 --save_plot
+cp lc_prediscovery/lc_2019lrj_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_prediscovery/lc_2019lrj_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_prediscovery/lc_2019lrj_detrended
+plot_TNS_cleaned_lc.py --bkg lc_prediscovery/lc_2019lrj_detrended_cleaned
+
+#********************************
+#different dstem
+#*****************************************
+dstem="/pcds/users/faus/image_sub/snIa_updates"
+#2019tst sector17/cam4_ccd1
+#remarkably, this removes the EB and seems to leave the SN at the time of discovery
+#must clip ends due to scattered light
+cd "$dstem"/sector17/cam4_ccd1
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc/lc_2019tst --trend lc/lc_detrend/lc0006.784.1956  --t0 1760   --t1 1790  --show --smooth_width 1 --save_plot --clip_yscale
+cp lc/lc_2019tst_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc/lc_2019tst_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_discovery/lc_2019tst_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2019tst_detrended_cleaned
+
+#2019uhp sector17/cam1_ccd4/
+#resonable detrending, but no signal
+cd "$dstem"/sector17/cam1_ccd4
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc/lc_2019uhp --trend lc/lc_detrend/lc0004.1263.1350  --t0 1778   --t1 1787  --show --smooth_width 1 --clip_yscale --save_plot 
+cp lc/lc_2019uhp_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc/lc_2019uhp_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_discovery/lc_2019uhp_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2019uhp_detrended_cleaned
+
+#2020cvn sector20/cam1_ccd2/
+#pretty good!
+cd "$dstem"/sector20/cam1_ccd2
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc/lc_2020cvn --trend lc/lc_detrend_offbyone/lc_0001.253.1711  --t0 1840   --t1 1855  --show --smooth_width 1 --save_plot --clip_yscale
+cp lc/lc_2020cvn_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc/lc_2020cvn_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_discovery/lc_2020cvn_detrended
+plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2020cvn_detrended_cleaned
+
+#********************************
+#back to main DIA for  dstem
+#*****************************************
+dstem=/data/tess/image_sub
+#2020kbk sector24/cam1_ccd3/
+#***can't get good detrending...
+#cd "$dstem"/sector24/cam1_ccd3
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_prediscovery/lc_2020kbk --trend lc_prediscovery/lc_detrend/lc0027.757.1828  --t0 1957.5   --t1 1962  --show --smooth_width 50
+
+#2020ywy sector30/cam1_ccd4/
+#pretty meh...lot's of chatter.  But it is an improvement
+cd "$dstem"/sector30/cam1_ccd4
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_prediscovery/lc_2020ywy --trend lc_\prediscovery/lc_detrend/lc0008.85.270  --t0 2130   --t1 2135  --show --smooth_width 50 --save_plot --clip_yscale
+cp lc_prediscovery/lc_2020ywy_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_prediscovery/lc_2020ywy_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_prediscovery/lc_2020ywy_detrended
+plot_TNS_cleaned_lc.py --bkg lc_prediscovery/lc_2020ywy_detrended_cleaned
+
+#2021lsr sector37/cam1_ccd4
+#pretty meh...lot's of chatter.  on a strap, too
+#not clear it is an improvment, but probably better to apply if going to publish
+cd "$dstem"/sector37/cam1_ccd4
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_prediscovery/lc_2021lsr --trend lc_prediscovery/lc_detrend/lc0005.259.2021  --t0 2307.5   --t1 2312  --show --smooth_width 100 --save_plot --clip_yscale
+cp lc_prediscovery/lc_2021lsr_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_prediscovery/lc_2021lsr_detrended.pdf ~/image_sub/snIa_detrend_plots/
+clean_lc.py lc_prediscovery/lc_2021lsr_detrended
+plot_TNS_cleaned_lc.py --bkg lc_prediscovery/lc_2021lsr_detrended_cleaned
+
+#doesn't work, some kind of background variable
+#cd "$dstem"/sector32/cam1_ccd2
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2020abdk --trend lc_discovery/lc_detrend/lc0025.1891.1102  --t0 2195.0   --t1 2197.0  --show --smooth_width 21 --save_plot --clip_yscale
+#cp lc_discovery/lc_2020abdk_detrended.png ~/image_sub/snIa_detrend_plots/
+#clean_lc.py lc_discovery/lc_2020abdk_detrended
+#plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2020abdk_detrended_cleaned
+
+#doesn't work, some kind of background variable
+#2021bzm
+#cd "$dstem"/sector34/cam1_ccd1
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2021bzm --trend lc_discovery/lc_detrend/lc0016.887.978  --t0 2230.0   --t1 2235.0  --show --smooth_width 21 --save_plot --clip_yscale
+#cp lc_discovery/lc_2020abdk_detrended.png ~/image_sub/snIa_detrend_plots/
+#clean_lc.py lc_discovery/lc_2020abdk_detrended
+#plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2020abdk_detrended_cleaned
+
+
+#this is the bright star, but it doesn't work, probably some kind of background variable
+#cd "$dstem"/sector44/cam2_ccd1
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2021abzn --trend lc_discovery/lc_detrend/lc0012.1064.1525  --t0 2505.7   --t1 2506.0  --show --smooth_width 11 --save_plot --clip_yscale
+#cp lc_discovery/lc_2021abzn_detrended.png ~/image_sub/snIa_detrend_plots/
+#clean_lc.py lc_discovery/lc_2021abzn_detrended
+#plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2021abzn_detrended_cleaned
+
+#doesn't really work
+#two nearby stars, both are plausibe
+#lc0010 is the brighter and closer one
+#2020kq
+#cd "$dstem"/sector20/cam4_ccd2
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2020kq --trend lc_discovery/lc_detrend/lc0010.492.1135  --t0 1856.0   --t1 1860.0   --show --smooth_width 51 --save_plot 
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2020kq --trend lc_discovery/lc_detrend/lc0002.485.1114  --t0 1856.0   --t1 1860.0   --show --smooth_width 51 --save_plot 
+#cp lc_discovery/lc_2021abzn_detrended.png ~/image_sub/snIa_detrend_plots/
+#clean_lc.py lc_discovery/lc_2021abzn_detrended
+#plot_TNS_cleaned_lc.py --bkg lc_discovery/lc_2021abzn_detrended_cleaned
+
+
+cd "$dstem"/sector50/cam4_ccd2
+python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_prediscovery/lc_2022ina --trend lc_prediscovery/lc_detrend/lc0012.112.353  --t0 2670.0   --t1 2678.0   --show --smooth_width 51 --save_plot 
+#python ~/image_sub/pipeline/detrend/stars/fit_template.py --source lc_discovery/lc_2020kq --trend lc_discovery/lc_detrend/lc0002.485.1114  --t0 1856.0   --t1 1860.0   --show --smooth_width 51 --save_plot 
+clean_lc.py lc_prediscovery/lc_2022ina_detrended
+plot_TNS_cleaned_lc.py --bkg lc_prediscovery/lc_2022ina_detrended_cleaned
+cp lc_prediscovery/lc_2022ina_detrended.png ~/image_sub/snIa_detrend_plots/
+cp lc_prediscovery/lc_2022ina_detrended.pdf ~/image_sub/snIa_detrend_plots/

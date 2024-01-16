@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+sector=$(pwd | awk -F/ '{print $5}')
+camccd=$(pwd | awk -F/ '{print $6}')
+cmd=$(for i in $(ls conv_tess*-00*[0-9][0-9][0-9][047]0-*cal.fits); do
+    echo "$i -region $1/phot.reg";done)
+
+echo $sector
+echo $camccd
+ds9 ref.fits -region $1/phot.reg $cmd -scale zscale -match scale&
+
+cmd2=$(for i in $(ls interp_tess*-00*[0-9][0-9][0-9][047]0-*cal.fits); do
+    echo "$i -region $1/phot.reg";done)
+
+ds9 ref.fits -region $1/phot.reg $cmd2 -scale zscale -match scale&
+
+cmd3=$(for i in $(ls bkg_tess*-00*[0-9][0-9][0-9][047]0-*cal.fits); do
+    echo "$i -region $1/phot.reg";done)
+
+ds9 ref.fits -region $1/phot.reg $cmd3 -scale zscale -match scale&

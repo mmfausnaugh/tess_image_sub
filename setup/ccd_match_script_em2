@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+interp_ref=$1
+
+dstem="/pdo/users/faus/image_sub/pipeline/setup"
+
+for i in 1 2 3 4; do 
+    for j in 1 2 3 4; do 
+	cp cam1_ccd1/ref_list cam${i}_ccd${j}/ref_list
+	cd cam${i}_ccd${j}
+	${dstem}/rename_refs ${i} ${j}
+	cp /pdo/users/faus/image_sub/pipeline/setup/default_config .
+	cp /pdo/users/faus/image_sub/pipeline/setup/phot_config .
+
+	for o in o1a o1b o2a o2b ; do
+	    mkdir $o
+	    cd $o
+	    pwd
+	    ${dstem}/deploy_process_config_em2 $interp_ref${i}-crm-ffi_ccd${j}.cal.fits
+	    cd ..
+	done
+	cp ref_list o1a
+	#python ~/image_sub/pipeline/util/quick_smooth.py &
+	#for k in $(ls tess*fits); do mv $k interp_$k; done
+
+	s1="ds9 "
+	s2=$(tr '\n' ' ' < ref_list | sed 's@tess@interp_tess@g')
+	s3=" -single -frame first -zoom to fit -zscale -cmap value 5 0.0 -match scale -match colorbar -match frame image"
+	#echo "$s1$s2$s3" > quick
+	cd ../
+	
+    done
+done
+
+
+wait

@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+image_ref=$(head -1 cam1_ccd1/ref_list)
+image_ref=${image_ref:0:27}
+echo $image_ref
+
+#setup config files.  image ref is the image to align all others too,
+#and to which ref_list gets convolved to match
+~/image_sub/pipeline/setup/ccd_match_script $image_ref 
+wait
+bash ~/image_sub/pipeline/prf/link_prfs_nums
+
+
+#register the images
+#for i in 1 2 3 4; do
+#    for j in 1 2 3 4; do
+#	cd cam${i}_ccd${j}
+#	~/isis/interp.match &
+#	cd ..
+#    done
+#done
+#
+#wait
+
+#make the reference.  assumes you've make ref_list by hand
+for i in 1 2 3 4; do
+    for j in 1 2 3 4; do
+	cd cam${i}_ccd${j}
+	~/isis/ref.csh &
+	cd ..
+    done
+done
+wait
+#now, inspect the reference.  If OK, run image_subtract

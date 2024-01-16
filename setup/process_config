@@ -1,0 +1,13 @@
+MRJ_DIR        /pdo/users/faus/isis/             Installation directory
+CONFIG_DIR     /pdo/users/faus/image_sub_tests/SN_test/cam1_ccd1_s1/   Where to find the "config" files
+IM_DIR         /pdo/users/faus/image_sub_tests/SN_test/cam1_ccd1_s1/   Directory with the images
+INFILE         /pdo/users/faus/image_sub_tests/SN_test/cam1_ccd1_s1/dates            Dates of the frames
+REFERENCE      /pdo/users/faus/image_sub_tests/SN_test/cam1_ccd1_s1/tess2018235084608-00005705-4-crm-ffi_ccd4.cal.fits
+REF_STACK      /pdo/users/faus/image_sub_tests/SN_test/cam1_ccd1_s1/interp_bkg-sub_tess2018220104526-00005215-1-crm-ffi_ccd1.cal.fits 
+REF_SUB        /pdo/users/faus/image_sub_tests/SN_test/cam1_ccd1_s1/ref.fits      Reference image for subtraction
+VARIABLES      /pdo/users/faus/image_sub_tests/SN_test/cam1_ccd1_s1/phot.data      Coordinates of objects
+DEGREE         2         Degree of the polynomial astr. transf., used by "interp.csh"
+COSMIC_THRESH  5.0       To reject the cosmic rays, used by "interp.csh" (this in in sigma)
+SIG_THRESH     1.0       Threshold of variability, used by "find.csh"
+N_REJECT       1         Nth frame, used by "detect.csh"
+MESH_SMOOTH    3         Smoothing mesh size, used by "detect.csh"

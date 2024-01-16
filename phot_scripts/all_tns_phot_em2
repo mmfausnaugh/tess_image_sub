@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+
+#gotta loop through sectors and do lc_discovery, lc_prediscovery, and lc_postdiscovery
+
+#main command is python make_phot_data_TNS --sector X --doall --mag 20 --outdir /scratch/faus/image_sub/ --tminus t1 --tplus t2
+
+function run_phot(){
+    for cam in 1 2 3 4; do
+	for ccd in 1 2 3 4; do
+	    for o in o1a o1b o2a o2b; do
+		cd cam${cam}_ccd${ccd}/${o}
+		cp ../phot.data .
+		for slice in $(ls -d slice*); do
+		    cd $slice
+
+		    for p in $(ls ../psf_file*fits); do 
+			ln -s $p
+		    done
+		    ln -s ../psf_table
+		    if [ -d lc ] ; then
+			echo "lc dir already exists"
+		    else
+			mkdir lc
+		    fi
+		    
+		    n=$(wc ../phot.data | awk '{print $1}')
+
+		    if [ $n -gt "0" ] ; then
+			if [ -e dates ]; then
+			    ~/isis/phot2.csh &
+			fi
+		    fi
+		    cd ..
+		done
+		wait
+		cd ../../
+	    done
+	done
+    done
+}
+
+
+function run_bkg_phot(){
+
+    for cam in 1 2 3 4; do
+	for ccd in 1 2 3 4; do
+	    for o in o1a o1b o2a o2b; do
+		cd "cam$cam""_ccd$ccd""/$o"
+
+		for slice in $(ls -d slice*); do 
+		    cd $slice 
+		    if [ ! -d bkg_phot ]; then
+			mkdir bkg_phot
+			cd bkg_phot
+			bash /pdo/users/faus/image_sub/pipeline/setup/make_bkg_phot_dir_em2
+		    else
+			cd bkg_phot
+		    fi
+
+		    if [ -d lc ] ; then
+			echo "lc dir already exists"
+		    else
+			mkdir lc
+		    fi
+
+
+		    n=$(wc ../../phot.data | awk '{print $1}')
+		
+		    if [ $n -gt "0" ]; then
+			if [ -e dates ]; then 
+			    ~/isis/phot2.csh &
+			fi
+		    fi
+		    cd ../../
+		done
+		wait
+		cd ../../
+	    done
+	done
+    done
+}
+
+
+function clean_phot(){
+    for cam in 1 2 3 4; do
+	for ccd in 1 2 3 4; do
+	    for o in o1a o1b o2a o2b; do
+		cd cam${cam}_ccd${ccd}/${o}
+                for slice in $(ls -d slice*); do
+                    cd $slice
+		    mkdir $1
+		    if [ -e dates ]; then
+			mv lc/* $1
+			#mkdir lc
+		    fi
+		    cd .. 
+		done
+		cd ../../
+	    done
+	done
+    done   
+}
+
+function clean_bkg_phot(){
+    for cam in 1 2 3 4; do
+	for ccd in 1 2 3 4; do
+	    for o in o1a o1b o2a o2b; do 
+		cd "cam$cam""_ccd$ccd""/$o"
+                for slice in $(ls -d slice*); do
+                    cd "$slice""/bkg_phot"
+		    mkdir $1
+		    if [ -e dates ]; then 
+			mv lc/* $1
+		    fi		    
+		    cd ../../
+		done
+		cd ../../
+	    done
+	done
+    done   
+}
+
+
+duse='/data/tess/image_sub/'
+#duse='/data/tess2/image_sub/'
+dscript='/pdo/users/faus/python/catalog2tess_px/scripts'
+
+for sector in  64 65 66; do
+    ##lc discovery
+    python ${dscript}/make_phot_data_TNS --sector $sector --doall --mag 28 --outdir $duse
+    cd "${duse}/sector${sector}"
+    run_phot
+    run_bkg_phot
+    wait
+    clean_phot lc_discovery
+    clean_bkg_phot lc_discovery
+
+    #lc prediscovery
+    #t0=-30
+    #t1=1000000
+    #python ${dscript}/make_phot_data_TNS --sector $sector --doall --mag 28 --outdir $duse --tminus $t0 --tplus $t1
+    #cd "${duse}/sector${sector}"
+    #run_phot
+    #wait
+    #run_bkg_phot
+    #wait
+    #clean_phot lc_prediscovery
+    #clean_bkg_phot lc_prediscovery
+
+   # #lc postdiscovery
+   #if [ $sector -lt 14 ]; then
+   #	t0=$((27*(${sector#0} -1 ))) #gotta do that because of leading zeros will fail for sector = 9
+   #else
+   #	#year2
+   #	#t0=$((27*($sector -14 )))
+   #	#year 3
+   #	#t0=$((27*($sector - 27 )))
+   #	#updating for year 4
+   #	t0=$((40*($sector - 40)))
+   #fi
+   #
+   #t1=-27
+   #python ${dscript}/make_phot_data_TNS --sector $sector --doall --mag 28 --outdir $duse --tminus $t0 --tplus $t1
+   #cd "${duse}/sector${sector}"
+   #run_phot
+   #wait
+   #run_bkg_phot
+   #wait
+   #clean_phot lc_postdiscovery
+   #clean_bkg_phot lc_postdiscovery
+
+done

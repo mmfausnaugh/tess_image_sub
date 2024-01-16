@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+orbit1=$1
+orbit2=$2
+
+
+for i in 1 2 3 4; do
+    for j in 1 2 3 4; do
+	mkdir cam${i}_ccd${j}
+    done
+done
+
+~/image_sub/pipeline/control/calibrate ${orbit1} ${orbit2}
+
+#break here, so that you can go make ref_list, and then run make_ref
+

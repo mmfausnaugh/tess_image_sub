@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+ds9 ref.fits conv_tess*-00*[0-9][0-9][0-9][047]0-*cal.fits -scale zscale -match scale&
+ds9 ref.fits interp_tess*-00*[0-9][0-9][0-9][047]0-*cal.fits -scale zscale -match scale&

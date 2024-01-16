@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+for i in 1 2 3 4; do
+    for j in 1 2 3 4; do
+	cd cam${i}_ccd${j}/o1a
+	for f in $(cat ref_list); do
+	    cp slice*/interp_"$f" interp_"$f"
+	done
+
+	~/isis/ref.csh &
+	cd ../../
+    done
+done
+wait
+
+for i in 1 2 3 4; do
+    for j in 1 2 3 4; do
+	cd cam${i}_ccd${j}/
+	ln -s o1a/ref.fits 
+	cd ..
+    done
+done
+wait
+#now, inspect the reference.  If OK, run image_subtract

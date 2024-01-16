@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+cwd=$(pwd)
+ref_im=$1
+
+echo -e "MRJ_DIR   \t/pdo/users/faus/isis/\tInstallation directory" > process_config
+echo -e "CONFIG_DIR\t${cwd}/\tWhere to find the \"config\" files" >> process_config
+echo -e "IM_DIR    \t${cwd}/\tDirectory with the images" >> process_config
+echo -e "INFILE    \t${cwd}/dates\tDates of the frames" >> process_config
+echo -e "REFERENCE \t${cwd}/${ref_im}\tRegistration Reference" >> process_config
+echo -e "REF_STACK \t${cwd}/interp_${ref_im}\tReference image for stacking median" >> process_config
+echo -e "REF_SUB   \t${cwd}/ref.fits\tReference image for subtraction" >> process_config
+echo -e "VARIABLES \t${cwd}/phot.data\tCoordinates of objects" >> process_config
+echo -e "DEGREE    \t1\tDegree of the polynomial astr. transf., used by \"interp.csh\"">> process_config
+echo -e "COSMIC_THRESH\t500000000000.0\tTo reject the cosmic rays, used by \"interp.csh\" (this in in sigma)">> process_config
+echo -e "SIG_THRESH   \t1.0\tThreshold of variability, used by \"find.csh\"">> process_config
+echo -e "N_REJECT     \t1\tNth frame, used by \"detect.csh\"">> process_config
+echo -e "MESH_SMOOTH  \t3\tSmoothing mesh size, used by \"detect.csh\"">> process_config
+
+cp /pdo/users/faus/image_sub/pipeline/setup/default_config .
+cp /pdo/users/faus/image_sub/pipeline/setup/phot_config .
+

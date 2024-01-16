@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+import scipy as sp
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import sys
+import os
+from tess_time.cut_ffi.cut_data import cut_data
+
+for lc in sys.argv[1:]:
+    try:
+        print(lc)
+
+        if '.png' in lc:
+            print('is a png')
+            continue
+
+        if os.path.isfile(os.path.basename(lc)+'.png'):
+            print('found a png')
+            continue
+
+        plt.figure()
+
+        if 'cleaned' in lc:
+            x,y,z = sp.genfromtxt(lc,unpack=1,usecols=(0,2,3))
+            plt.errorbar(x,y,z,fmt='ko',ms=3)
+        else:
+            x,y,z = sp.genfromtxt(lc,unpack=1,usecols=(0,1,2))
+
+            wdir = os.path.abspath(os.path.dirname(lc))
+            sector_idx = wdir.find('sector')
+            sector     = wdir[sector_idx : sector_idx+8]
+            cam_idx = wdir.find('cam')
+            cam = wdir[cam_idx : cam_idx+4]
+            ccd_idx = wdir.find('ccd')
+            ccd = wdir[ccd_idx : ccd_idx+4]
+
+
+            x,y,z = cut_data(x,y,z,sector,cam,ccd)
+            plt.errorbar(x,-y,z,fmt='ko',ms=3)
+
+        plt.savefig(lc+'.png')
+
+
+    except Exception as e:
+        print(e)
+        continue
+
+    plt.close()
+#plt.show()

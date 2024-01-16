@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+
+segment=$1
+
+for i in 1 2 3 4; do 
+    for j in 1 2 3 4; do 
+	cd "cam$i""_ccd$j""/$segment"
+	#do smooth the images
+	##for s in $(ls -d slice*); do
+	##    cd $s
+	##    pwd
+	##    python ~/image_sub/pipeline/util/quick_smooth.py &
+	##    cd .. 
+	##done 
+	##wait
+	#do subtraction
+	for s in $(ls -d slice*); do
+	    cd $s
+	    pwd
+	    ~/isis/subtract.csh & 
+	    cd .. 
+	done 
+	wait
+	#do columns
+	for s in $(ls -d slice*); do
+	    cd $s
+	    pwd
+	    python ~/image_sub/pipeline/util/correct_straps.py & 
+	    cd .. 
+	done 
+	wait
+	#median filter
+	for s in $(ls -d slice*); do
+	    cd $s
+	    pwd
+	    python ~/image_sub/pipeline/util/median_filter_diff_row_col.py & 
+	    cd .. 
+	done 
+	wait 
+
+	for slice in $(ls -d slice*); do
+            cd $slice
+	    
+            for p in $(ls ../psf_file*fits); do
+                ln -s $p
+            done
+            ln -s ../psf_table
+	    cd ..
+	done
+	cd ../../
+    done
+done
+
