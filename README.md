@@ -2,19 +2,22 @@ Roughly speaking, I am using directories to organize things instead of databases
 
 The directories also handle multiprocessing.  In TESS EM2, they look like this:
 
+```
 -sector??
 --cam?_ccd?
 ---o1a
 ---o1b
 ---o2a
 ---oba
-
+```
 
 Each o{1a,1b,2a,2b} directory has a number of subdirectories like this
+```
 -o1a
 --slice000
 --slice001
 --slice002
+```
 
 up to some number near 192. This is because I have 192 cores, and the way I multiprocess is using a bashcript to loop over slice directories 
 
