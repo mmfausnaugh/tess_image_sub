@@ -85,7 +85,15 @@ def main():
     print(args.photfile)
     ref_col,ref_row = np.genfromtxt(args.photfile,unpack=1,usecols=(2,3),dtype=int)
     objects = np.genfromtxt(args.photfile,usecols=(4),dtype=str)
-    objs = np.array([re.search('lc/lc_(\w*)',obj).group(1) for obj in objects ])
+    print(objects)
+    print(type(objects.astype(str)))
+    try:
+        objs = np.array([re.search('lc/lc_(\w*)',obj).group(1) for obj in objects ])
+    except:
+        for obj in np.reshape(objects, (1,1)):
+            print('object:',obj, type(obj) )
+            objs = [re.search('lc/lc_(\w*)',obj[0] ).group(1)]
+
     try:
         len(ref_row.astype(int))
     except:

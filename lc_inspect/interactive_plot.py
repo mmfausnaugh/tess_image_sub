@@ -12,17 +12,19 @@ import argparse
 
 from tess_time.cut_ffi.cut_data import cut_data
 
+import glob
 
 def find_images(times, image_files, time_match, dstem):
     dt = abs(times - time_match)
+    print('checks!!')
     idx_match = np.where(dt == min(dt) )[0][0]
 
-    ##print(times[idx_match],time_match)
-    ##print(idx_match)
-    ##print(np.c_[times[idx_match -1 : idx_match + 2],
-    ##            image_files[idx_match -1 : idx_match +2 ]])
+    #print(times[idx_match],time_match)
+    #print(idx_match)
+    #print(np.c_[times[idx_match -1 : idx_match + 2],
+    #            image_files[idx_match -1 : idx_match +2 ]])
 
-    image_return = [ dstem + '/conv_' + im for im in image_files[idx_match - 1: idx_match +2 ] ]
+    image_return = [ im.replace('/tess2','/conv_tess2')  for im in image_files[idx_match - 1: idx_match +2 ] ]
     return image_return 
 
 
@@ -156,8 +158,34 @@ ax3.set_title('rms')
 
 
 #get times and image list
-image_files = np.genfromtxt(date_file,usecols=(0),dtype=str)
-times       = np.genfromtxt(date_file,usecols=(1))
+if int(sector.replace('sector','') ) < 56:
+    image_files = np.genfromtxt(date_file,usecols=(0),dtype=str)
+    image_files = np.array([ os.path.join(dstem, im) for im in image_files])
+    times       = np.genfromtxt(date_file,usecols=(1))
+else:
+    #now, need to keep track of full path
+    image_files = []
+    times = []
+
+
+    for o in ['o1a','o1b','o2a','o2b']:
+        slice_dirs = glob.glob(os.path.join(dstem, o,'slice???'))
+        slice_dirs = np.sort(slice_dirs)
+        for slice_dir in slice_dirs:
+            if os.path.isfile(os.path.join(slice_dir,'dates')):
+                with open(os.path.join(slice_dir,'dates'),'r') as fin:
+                    if len(fin.readlines()) <2:
+                        continue
+                img_use = np.genfromtxt(os.path.join(slice_dir,'dates'),
+                                        usecols=(0),dtype=str)
+
+                t_use = np.genfromtxt(os.path.join(slice_dir,'dates'),
+                                      usecols=(1))
+                img_use = [os.path.join( slice_dir, im) for im in img_use]
+                image_files = np.r_[image_files,  img_use]
+                times = np.r_[times, t_use]
+    #image_files = np.array(image_files)
+    #times = np.array(times)
 
 
 # find match from mouse click

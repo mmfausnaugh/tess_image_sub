@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import numpy as np
 import scipy as sp
 from astropy.io import fits
 import photutils as phot
@@ -20,8 +21,18 @@ def get_inputs(args):
     return parser.parse_args()
 
 def get_photdata(photfile):
-    col,row = sp.genfromtxt(photfile,unpack=1,usecols=(0,1))
-    names = sp.genfromtxt(photfile,usecols=(4),dtype=str)
+    names = np.genfromtxt(photfile,usecols=(4),dtype=str)
+    col,row = np.genfromtxt(photfile,unpack=1,usecols=(0,1))
+    with open(photfile,'r') as fin:
+        if len(fin.readlines()) > 1:
+            pass
+        else:
+            names = np.array([names])
+            col = np.array([col])
+            row = np.array([row])
+
+
+    print(col,row,names, type(names) )
     name_out = []
     for name in names:
         s = name.split('/')
@@ -29,13 +40,13 @@ def get_photdata(photfile):
     return [col,row,name_out]
 
 def make_regions():
-    bkgs = sp.zeros((2,15,15),dtype=bool)
+    bkgs = np.zeros((2,15,15),dtype=bool)
     bkgs[:,0:2,:] = 1
     bkgs[:,:,0:2] = 1
     bkgs[:,13:,:] = 1
     bkgs[:,:,13:] = 1
 
-    aps = sp.zeros((2,15,15),dtype=bool)
+    aps = np.zeros((2,15,15),dtype=bool)
     #defaults to 1x1 and 3x3, which is everything not in lc_ap_phot.py
     aps[0,7,7] = 1
     aps[1,6:9,6:9] = 1
@@ -52,13 +63,13 @@ def do_phot(infile, photdata):
         
 
 
-        for ii in range(sp.shape(photdata)[1]):            
+        for ii in range(np.shape(photdata)[1]):            
             col_center, row_center, fname = photdata[0][ii], photdata[1][ii], photdata[2][ii]
             if col_center < 54 or col_center > 2089 or row_center < 10 or row_center > 2038 :
                 continue
             with open(fname,'a') as fout_phot:
-                trunc_col_center = sp.around(col_center)
-                trunc_row_center = sp.around(row_center)
+                trunc_col_center = np.around(col_center)
+                trunc_row_center = np.around(row_center)
                 cmin = int(trunc_col_center - 7)
                 cmax = int(trunc_col_center + 7)
                 rmin = int(trunc_row_center - 7)

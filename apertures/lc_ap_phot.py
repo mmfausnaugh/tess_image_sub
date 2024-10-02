@@ -77,6 +77,8 @@ def do_phot(infile, photdata, plot=False,diff=False):
             if col_center < 54 or col_center > 2089 or row_center < 10 or row_center > 2038 :
                 continue
             with open(fname,'a') as fout_phot:
+                fout_phot.write(infile+ '  ')
+
                 trunc_col_center = np.around(col_center)
                 trunc_row_center = np.around(row_center)
                 cmin = int(trunc_col_center - 7)
@@ -102,7 +104,7 @@ def do_phot(infile, photdata, plot=False,diff=False):
                     #it is 0,0 = center of lower left pixel
                     #so, that matches ISIS and the phot.data 
                     #file
-                f1,bkg1,f2,bkg2 = p.small_circle_phot(col_center - cmin, row_center-rmin)
+                f1,bkg1,f2,bkg2,f3,bkg3 = p.small_circle_phot(col_center - cmin, row_center-rmin)
                 fout_phot.write('{:15.2f} {:10.2f} {:15.2f} {:10.2f}'.format(
                     f1,bkg1,f2,bkg2) )
                 f1,bkg1,f2,bkg2,f3,bkg3 = p.circle_phot(col_center - cmin, row_center-rmin)

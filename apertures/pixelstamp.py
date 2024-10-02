@@ -137,8 +137,10 @@ class PixelStamp(object):
     def small_circle_phot(self,col,row):
         a1 = phot.CircularAperture( (col,row),r = 1)
         a2 = phot.CircularAperture( (col,row),r = 2)
+        a3 = phot.CircularAperture( (col,row),r = 3)
         pt1 = phot.aperture_photometry(self.image, a1, method='subpixel',subpixels=5)
         pt2 = phot.aperture_photometry(self.image, a2, method='subpixel',subpixels=5)
+        pt3 = phot.aperture_photometry(self.image, a3, method='subpixel',subpixels=5)
         b1 = phot.CircularAnnulus( (col,row),r_in=8 , r_out= 12)
         bmask = b1.to_mask(method='center')
         bkg_arr = np.ravel(bmask.multiply(self.image))
@@ -146,8 +148,11 @@ class PixelStamp(object):
         bkg = 2.5*np.median( bkg_arr ) - 1.5*np.mean(bkg_arr)
         bkg1 = a1.area*bkg
         bkg2 = a2.area*bkg
+        bkg3 = a3.area*bkg
 
-        return pt1['aperture_sum'].data[0] - bkg1, bkg1, pt2['aperture_sum'].data[0] - bkg2, bkg2
+        return pt1['aperture_sum'].data[0] - bkg1, bkg1, pt2['aperture_sum'].data[0] - bkg2, bkg2, \
+            pt3['aperture_sum'].data[0] - bkg3, bkg3
+
     def lots_of_small_circle_phot(self,col,row):
         aperature_radii = np.r_[0.25:2.25:0.25]
         aperatures = [phot.CircularAperture( (col,row), r = rad) for rad in aperature_radii]
@@ -247,7 +252,8 @@ class PixelStamp(object):
 
         try:
             B = self.do_fit(subtracted_image, error_image, templates)
-        except np.linalg.LinAlgError:
+        except np.linalg.LinAlgError as e:
+            print(e)
             pass
 
         scene = 0

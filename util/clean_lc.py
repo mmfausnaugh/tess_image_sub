@@ -179,8 +179,10 @@ def clean_lc(ifile, metadata,
     #load up the filtered background estimate, if it exists
     dstem,dtarget = os.path.split(wdir)
     ifile2 = os.path.join(dstem,'bkg_phot',dtarget,os.path.basename(ifile))
+    print(ifile2)
     if 'detrended' in ifile2:
         ifile2 = ifile2[0:-10]
+
     if os.path.isfile(ifile2):
         x_bkg,y_bkg,z_bkg,bkg_bkg = np.genfromtxt(ifile2, unpack=1,usecols=(0,1,2,6))
 
