@@ -2,7 +2,8 @@
 
 interp_ref=$1
 
-dstem="/pdo/users/faus/image_sub/pipeline/setup"
+#environment variable is defined in tess_image_sub/config/setup-dia.sh
+dstem="$PIPELINE_DIR/setup"
 
 for i in 1 2 3 4; do 
     for j in 1 2 3 4; do 

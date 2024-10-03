@@ -16,6 +16,7 @@ echo -e "SIG_THRESH   \t1.0\tThreshold of variability, used by \"find.csh\"">> p
 echo -e "N_REJECT     \t1\tNth frame, used by \"detect.csh\"">> process_config
 echo -e "MESH_SMOOTH  \t3\tSmoothing mesh size, used by \"detect.csh\"">> process_config
 
-cp /pdo/users/faus/image_sub/pipeline/setup/default_config .
-cp /pdo/users/faus/image_sub/pipeline/setup/phot_config .
+#environment variable defined in tess_image_sub/config/setup-dia.sh
+cp "$PIPELINE_DIR"/setup/default_config .
+cp "$PIPELINE_DIR"/setup/phot_config .
 
