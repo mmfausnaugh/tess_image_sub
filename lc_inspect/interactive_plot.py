@@ -12,6 +12,7 @@ import argparse
 
 from tess_time.cut_ffi.cut_data import cut_data
 
+<<<<<<< HEAD
 import glob
 
 def find_images(times, image_files, time_match, dstem):
@@ -25,6 +26,19 @@ def find_images(times, image_files, time_match, dstem):
     #            image_files[idx_match -1 : idx_match +2 ]])
 
     image_return = [ im.replace('/tess2','/conv_tess2')  for im in image_files[idx_match - 1: idx_match +2 ] ]
+=======
+
+def find_images(times, image_files, time_match, dstem):
+    dt = abs(times - time_match)
+    idx_match = np.where(dt == min(dt) )[0][0]
+
+    ##print(times[idx_match],time_match)
+    ##print(idx_match)
+    ##print(np.c_[times[idx_match -1 : idx_match + 2],
+    ##            image_files[idx_match -1 : idx_match +2 ]])
+
+    image_return = [ dstem + '/conv_' + im for im in image_files[idx_match - 1: idx_match +2 ] ]
+>>>>>>> 7a22a11ef1034de2480b1598802c4de028eddf56
     return image_return 
 
 
@@ -158,6 +172,7 @@ ax3.set_title('rms')
 
 
 #get times and image list
+<<<<<<< HEAD
 if int(sector.replace('sector','') ) < 56:
     image_files = np.genfromtxt(date_file,usecols=(0),dtype=str)
     image_files = np.array([ os.path.join(dstem, im) for im in image_files])
@@ -186,6 +201,10 @@ else:
                 times = np.r_[times, t_use]
     #image_files = np.array(image_files)
     #times = np.array(times)
+=======
+image_files = np.genfromtxt(date_file,usecols=(0),dtype=str)
+times       = np.genfromtxt(date_file,usecols=(1))
+>>>>>>> 7a22a11ef1034de2480b1598802c4de028eddf56
 
 
 # find match from mouse click

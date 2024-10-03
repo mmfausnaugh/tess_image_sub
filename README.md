@@ -8,7 +8,7 @@ The directories also handle multiprocessing.  In TESS EM2, they look like this:
 ---o1a
 ---o1b
 ---o2a
----oba
+---o2b
 ```
 
 Each o{1a,1b,2a,2b} directory has a number of subdirectories like this

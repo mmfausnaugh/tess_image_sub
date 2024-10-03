@@ -159,7 +159,6 @@ def main():
             continue
 
         x,y,z,bkg,bkg_mod,bkg2 = np.genfromtxt(ifile,unpack=1,usecols=(0,2,3,6,7,8),skip_header=1)
-
         if args.mag:
             mag,emag = np.genfromtxt(ifile,unpack=1,usecols=(4,5),skip_header=1)
             

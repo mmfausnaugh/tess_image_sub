@@ -162,8 +162,12 @@ def main():
            or 'tst' in lc_source or 'lrj' in lc_source:
             F,(ax1,ax2,ax3) = plt.subplots(3,1,sharex='col')
         else:
+<<<<<<< HEAD
             #F,(ax1,ax2,ax3) = plt.subplots(3,1,sharex='col',sharey='col')
             F,(ax1,ax2,ax3) = plt.subplots(3,1,sharex='col')
+=======
+            F,(ax1,ax2,ax3) = plt.subplots(3,1,sharex='col',sharey='col')
+>>>>>>> 7a22a11ef1034de2480b1598802c4de028eddf56
 
         ax1.plot(x, -y_template,'r.',rasterized=True)
         ax1.plot(x, -y_template3,'m',rasterized=True)

@@ -78,7 +78,6 @@ def do_phot(infile, photdata, plot=False,diff=False):
                 continue
             with open(fname,'a') as fout_phot:
                 fout_phot.write(infile+ '  ')
-
                 trunc_col_center = np.around(col_center)
                 trunc_row_center = np.around(row_center)
                 cmin = int(trunc_col_center - 7)
