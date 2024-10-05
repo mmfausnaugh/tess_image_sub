@@ -1,12 +1,20 @@
 #!/usr/bin/env bash
+
+set -euxo
+
 for i in 1 2 3 4; do
     for j in 1 2 3 4; do
-	cd cam${i}_ccd${j}/o1a
+	cd cam${i}-ccd${j}/o1a
 	for f in $(cat ref_list); do
 	    cp slice*/interp_"$f" interp_"$f"
 	done
 
-	~/isis/ref.csh &
+	srun --job-name="make_ref_cam${i}-ccd${j}" \
+             --output=%x.o%j --error=%x.e%j \
+             --partition=nocona \
+             --nodes 1 --cpus-per-task 1 \
+             --ntasks-per-node=1 \
+	     ${ISIS_DIR}/ref.csh &
 	cd ../../
     done
 done
@@ -14,8 +22,10 @@ wait
 
 for i in 1 2 3 4; do
     for j in 1 2 3 4; do
-	cd cam${i}_ccd${j}/
-	ln -s o1a/ref.fits 
+	cd cam${i}-ccd${j}/
+	[[ -e ref.fits ]] || {
+	    ln -s o1a/ref.fits ;
+	}
 	cd ..
     done
 done

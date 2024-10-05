@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
+set -euxo
 
 if [ -e dates ]; then
     exit 1
 else
-    for f in $(ls tess*fits); do
+    for f in $(ls hlsp_tica_tess*fits); do
 	t=$(gethead STARTTJD $f);
 	echo "$f   $t" >> dates
     done

@@ -1,22 +1,29 @@
 #!/usr/bin/env bash
 
-interp_ref=$1
+set -euxo
 
-dstem="/pdo/users/faus/image_sub/pipeline/setup"
+
+dstem=$PIPELINE_DIR
 
 for i in 1 2 3 4; do 
-    for j in 1 2 3 4; do 
-	cp cam1_ccd1/ref_list cam${i}_ccd${j}/ref_list
-	cd cam${i}_ccd${j}
-	${dstem}/rename_refs ${i} ${j}
-	cp /pdo/users/faus/image_sub/pipeline/setup/default_config .
-	cp /pdo/users/faus/image_sub/pipeline/setup/phot_config .
+    for j in 1 2 3 4; do
+	[[ -f cam${i}-ccd${j}/ref_list ]] || {
+	    cp cam1-ccd1/ref_list cam${i}-ccd${j}/ref_list;
+	}
+	cd cam${i}-ccd${j}
+	${dstem}/setup/rename_refs ${i} ${j}
+	cp ${PIPELINE_DIR}/setup/default_config .
+	cp ${PIPELINE_DIR}/setup/phot_config .
+
+	interp_ref=$(head -1 ref_list)
 
 	for o in o1a o1b o2a o2b ; do
-	    mkdir $o
+	    [[ -d $o ]] || {
+		mkdir $o;
+	    }
 	    cd $o
 	    pwd
-	    ${dstem}/deploy_process_config_em2 $interp_ref${i}-crm-ffi_ccd${j}.cal.fits
+	    ${dstem}/setup/deploy_process_config_em2 $interp_ref
 	    cd ..
 	done
 	cp ref_list o1a

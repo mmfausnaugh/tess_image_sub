@@ -3,17 +3,17 @@
 interp_ref=$1
 
 #environment variable is defined in tess_image_sub/config/setup-dia.sh
-dstem="$PIPELINE_DIR/setup"
+dstem="$PIPELINE_DIR"
 
 for i in 1 2 3 4; do 
     for j in 1 2 3 4; do 
-	cp cam1_ccd1/ref_list cam${i}_ccd${j}/ref_list
+	cp cam1-ccd1/ref_list cam${i}-ccd${j}/ref_list
 	cd cam${i}_ccd${j}
-	${dstem}/rename_refs ${i} ${j}
-	${dstem}/deploy_process_config $interp_ref${i}-crm-ffi_ccd${j}.cal.fits
+	${dstem}/setup/rename_refs ${i} ${j}
+	${dstem}/setup/deploy_process_config $interp_ref${i}-crm-ffi_ccd${j}.cal.fits
 	#don't rename files if we are doing image registration/interpolation
 	gethead STARTTJD tess*fits > dates
-	python ~/image_sub/pipeline/util/quick_smooth.py &
+	python ${dstem}/util/quick_smooth.py &
 	#for k in $(ls tess*fits); do mv $k interp_$k; done
 
 	s1="ds9 "

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
 import numpy as np
@@ -33,9 +34,9 @@ row_subs = [ [9,524],[524,1039],[1039,1554],[1554,2048] ]
 filter_size = 30
 
 
-for ii,im in enumerate(imlist):
+for ii,im in enumerate(np.nditer(imlist)):
 
-    f = fits.open('conv_'+im,'update')
+    f = fits.open('conv_' + str(im) ,'update')
     data = f[0].data
     bkg = np.zeros( (2078,2136) )
 
@@ -72,4 +73,4 @@ for ii,im in enumerate(imlist):
 
 
 
-    fits.writeto('bkg_'+im, bkg + bkg2)
+    fits.writeto('bkg_' + str(im), bkg + bkg2)

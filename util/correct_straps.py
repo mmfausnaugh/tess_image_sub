@@ -66,10 +66,10 @@ bkg_indexes = np.array([   [[108,117],[133,142]],
                            [[1995,2004],[2020,2029]]
                       ])
 
-for ii,im in enumerate(imlist):
+for ii,im in enumerate(np.nditer(imlist)) :
 #for im in sys.argv[1:]:
     
-    f = fits.open('conv_' + im,'update')
+    f = fits.open('conv_' + str(im),'update')
     data = f[0].data
 #    out  = np.zeros(np.shape(data))
     out2  = deepcopy(data)

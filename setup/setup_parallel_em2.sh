@@ -5,7 +5,10 @@
 ## $1 - number of processing units to use
 
 # Make slice directories with the corresponding dates file
-python "/pdo/users/faus/image_sub/pipeline/setup/"make_parallel.py $1
+
+set -euxo
+
+python "${PIPELINE_DIR}/setup/"make_parallel.py $1
 
 
 for (( ii=0 ; ii<$1 ; ii++ )); do
@@ -17,7 +20,11 @@ for (( ii=0 ; ii<$1 ; ii++ )); do
 
 	# Create soft links to the field FITS files
 	cd $slice
-	for f in $(awk '{print $1}' dates); do ln -s ../$f; done
+	for f in $(awk '{print $1}' dates); do
+	    [[ -e $f ]] || {
+		ln -s ../$f;
+	    }
+	done
 	cd ..
     fi
 done

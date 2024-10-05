@@ -5,7 +5,7 @@ ref_im=$1
 #designed for em2, with subdirs for o1a, o1b, o2a, o2b
 cwd=$(pwd)
 
-echo -e "MRJ_DIR   \t/pdo/users/faus/isis/\tInstallation directory" > process_config
+echo -e "MRJ_DIR   \t${ISIS_DIR}\tInstallation directory" > process_config
 echo -e "CONFIG_DIR\t${cwd}/../\tWhere to find the \"config\" files" >> process_config
 echo -e "IM_DIR    \t${cwd}/\tDirectory with the images" >> process_config
 echo -e "INFILE    \t${cwd}/dates\tDates of the frames" >> process_config

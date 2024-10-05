@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 
-sed -i "s/\-1\-/\-$1\-/" ref_list 
+#sed -i "s/\-1\-/\-$1\-/" ref_list 
+sed -i "s/cam1/cam$1/" ref_list
 sed -i "s/ccd1/ccd$2/" ref_list

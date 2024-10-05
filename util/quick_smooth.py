@@ -8,13 +8,13 @@ from astropy.io import fits
 
 imlist = np.genfromtxt('dates',usecols=(0),dtype=str) 
 
-for im in imlist:
-    print(im)
-    if os.path.isfile('interp_'+im):
+for im in np.nditer(imlist):
+    
+    if os.path.isfile('interp_'+str(im) ):
         continue
     #    data = fits.open(im)[0].data
     try:
-        fin = fits.open(im)
+        fin = fits.open( str(im) )
     except:
         continue
     data = fin[0].data
@@ -28,4 +28,4 @@ for im in imlist:
     hdu1 = fin[1]
     
     hdu_list = fits.HDUList([hdu0,hdu1])
-    hdu_list.writeto('interp_'+im, checksum=True)
+    hdu_list.writeto('interp_' + str(im) , checksum=True)

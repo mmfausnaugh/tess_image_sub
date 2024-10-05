@@ -19,7 +19,7 @@ for ii in range(NPROC):
     if max_idx >= len(fnames):
         max_idx = len(fnames) 
 
-    if min_idx > len(fnames):
+    if min_idx >= len(fnames):
         sys.exit()
 
     # create slice directory if it doesn't exist

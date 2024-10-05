@@ -5,7 +5,7 @@ segment=$1
 
 for i in 1 2 3 4; do 
     for j in 1 2 3 4; do 
-	cd "cam$i""_ccd$j""/$segment"
+	cd "cam$i""-ccd$j""/$segment"
 	#do smooth the images
 	##for s in $(ls -d slice*); do
 	##    cd $s
@@ -18,36 +18,52 @@ for i in 1 2 3 4; do
 	for s in $(ls -d slice*); do
 	    cd $s
 	    pwd
-	    ~/isis/subtract.csh & 
+	    srun --job-name="subtract_cam${i}-ccd${j}" \
+		 --output=%x.o%j --error=%x.e%j \
+		 --partition=nocona \
+		 --nodes 1 --cpus-per-task 1 \
+		 --ntasks-per-node=1 \
+		 ${ISIS_DIR}/subtract.csh & 
 	    cd .. 
-	done 
+	done
+	echo "waiting on image subtract"
 	wait
 	#do columns
 	for s in $(ls -d slice*); do
 	    cd $s
-	    pwd
-	    python ~/image_sub/pipeline/util/correct_straps.py & 
+	    srun --job-name="strap_correct_cam${i}-ccd${j}" \
+		 --output=%x.o%j --error=%x.e%j \
+		 --partition=nocona \
+		 --nodes 1 --cpus-per-task 1 \
+		 --ntasks-per-node=1 \
+		 ${PIPELINE_DIR}/util/correct_straps.py & 
 	    cd .. 
-	done 
+	done
+	echo "waiting on strap correction"
 	wait
 	#median filter
 	for s in $(ls -d slice*); do
 	    cd $s
-	    pwd
-	    python ~/image_sub/pipeline/util/median_filter_diff_row_col.py & 
+	    srun --job-name="median_filter_cam${i}-ccd${j}" \
+		 --output=%x.o%j --error=%x.e%j \
+		 --partition=nocona \
+		 --nodes 1 --cpus-per-task 1 \
+		 --ntasks-per-node=1 \
+		 ${PIPELINE_DIR}/util/median_filter_diff_row_col.py & 
 	    cd .. 
-	done 
+	done
+	echo "waiting on median filter"
 	wait 
 
-	for slice in $(ls -d slice*); do
-            cd $slice
-	    
-            for p in $(ls ../psf_file*fits); do
-                ln -s $p
-            done
-            ln -s ../psf_table
-	    cd ..
-	done
+	##for slice in $(ls -d slice*); do
+        ##    cd $slice
+	##    
+        ##    for p in $(ls ../psf_file*fits); do
+        ##        ln -s $p
+        ##    done
+        ##    ln -s ../psf_table
+	##    cd ..
+	##done
 	cd ../../
     done
 done
