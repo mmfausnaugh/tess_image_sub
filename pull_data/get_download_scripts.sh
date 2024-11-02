@@ -13,7 +13,7 @@ sectoruse=$(printf "%04d" $sector)
 urlstem="https://archive.stsci.edu/hlsps/tica/bundles/"
 
 
-dstem=$DATA_PATH
+dstem=$DATA_DIR
 target="$dstem""/s$sectoruse"
 
 if [[ -d $target ]]; then

@@ -22,7 +22,7 @@ for i in 1 2 3 4; do
 		 --output=%x.o%j --error=%x.e%j \
 		 --partition=nocona \
 		 --nodes 1 --cpus-per-task 1 \
-		 --ntasks-per-node=1 \
+		 --ntasks-per-node=1\
 		 ${ISIS_DIR}/subtract.csh & 
 	    cd .. 
 	done

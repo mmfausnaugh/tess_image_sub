@@ -33,7 +33,7 @@ for i in 1 2 3 4; do
     for j in 1 2 3 4; do 
 	cd "cam$i""-ccd$j"/"$o"
 	pwd
-	echo "running make_dats in cam$i""-ccd$j"
+	echo "running make_dates in cam$i""-ccd$j"
 	for f in ../hlsp_tica_tess*fits; do 
 	    mv $f .
 	done

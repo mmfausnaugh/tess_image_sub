@@ -14,6 +14,7 @@ for i in 1 2 3 4; do
              --partition=nocona \
              --nodes 1 --cpus-per-task 1 \
              --ntasks-per-node=1 \
+	     --account= mfausnau_grp\
 	     ${ISIS_DIR}/ref.csh &
 	cd ../../
     done
