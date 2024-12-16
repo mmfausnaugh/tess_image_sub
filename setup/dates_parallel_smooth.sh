@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-set -euxo
+set -euo
 shopt -s nullglob
 
 
@@ -19,6 +19,7 @@ if [[ $o == 'o1a' ]]; then
     srun --job-name="setup_ccd_matches" \
 	 --output=%x.o%j --error=%x.e%j \
 	 --partition=nocona \
+	 --account=${ACCOUNT} \
 	 --nodes 1 --cpus-per-task 1 \
 	 --ntasks-per-node=1 \
 	 ${PIPELINE_DIR}/setup/ccd_match_script_em2
@@ -26,7 +27,8 @@ if [[ $o == 'o1a' ]]; then
 
 fi
 
-##link_prf_nums_em2 $o
+#link at the segment level directory (o1a, o1b, o2a, or o2b)
+link_prf_nums_em2 $o
 
 
 for i in 1 2 3 4; do 
@@ -34,15 +36,17 @@ for i in 1 2 3 4; do
 	cd "cam$i""-ccd$j"/"$o"
 	pwd
 	echo "running make_dates in cam$i""-ccd$j"
-	for f in ../hlsp_tica_tess*fits; do 
-	    mv $f .
-	done
+	#moved to downlowd scripts
+	#for f in ../hlsp_tica_tess*fits; do 
+	#    mv $f .
+	#done
 	
 	echo ${PIPELINE_DIR}
 	ls ${PIPELINE_DIR}/setup/make_dates
 	srun --job-name="make_dates_cam$i""-ccd$j" \
 	     --output=%x.o%j --error=%x.e%j \
 	     --partition=nocona \
+	     --account=${ACCOUNT} \
 	     --nodes 1 --cpus-per-task 1 \
 	     --ntasks-per-node=1 \
 	     ${PIPELINE_DIR}/setup/make_dates &
@@ -59,9 +63,10 @@ for i in 1 2 3 4; do
 	srun --job-name="setup_parallel" \
 	     --output=%x.o%j --error=%x.e%j \
 	     --partition=nocona \
+	     --account=${ACCOUNT} \
 	     --nodes 1 --cpus-per-task 1 \
 	     --ntasks-per-node=1 \
-	     ${PIPELINE_DIR}/setup/setup_parallel_em2.sh 256 &
+	     ${PIPELINE_DIR}/setup/setup_parallel_em2.sh $NCORES &
 	cd ../../
     done
 done
@@ -77,6 +82,7 @@ for i in 1 2 3 4; do
 	    srun  --job-name="quick_smooth_cam$i""-ccd$j" \
 		 --output=%x.o%j --error=%x.e%j \
 		 --partition=nocona \
+		 --account=${ACCOUNT} \
 		 --nodes 1 --cpus-per-task 1 \
 		 --ntasks-per-node=1\
 		 ${PIPELINE_DIR}/util/quick_smooth.py &

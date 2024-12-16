@@ -23,11 +23,11 @@ for ii in range(NPROC):
         sys.exit()
 
     # create slice directory if it doesn't exist
-    if not os.path.exists('./slice{:03d}'.format(ii)):
-        os.mkdir('./slice{:03d}'.format(ii))
+    if not os.path.exists('./slice{:04d}'.format(ii)):
+        os.mkdir('./slice{:04d}'.format(ii))
 
     # slice the dates file
-    with open('./slice{:03d}/dates'.format(ii),'w') as fout:
+    with open('./slice{:04d}/dates'.format(ii),'w') as fout:
         for jj in range(min_idx, max_idx):
             fout.write('{} {:.12f}\n'.format(fnames[jj],tjd[jj]) )
 

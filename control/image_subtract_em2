@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-
+set -euo
 segment=$1
 
 for i in 1 2 3 4; do 

@@ -9,11 +9,12 @@
 
 #if there are more fits files than expected, it exists with error code 2.
 
-set -euxo
+set -euo
 
 segment1=$(ls hlsp_tica_tess_ffi_s*-o*-cam1-ccd1_tess_v01_ffis.sh | awk -F- '{print $2}')
 sectoruse=$(ls hlsp_tica_tess_ffi_s*-o*-cam1-ccd1_tess_v01_ffis.sh | awk -F- '{print $1}' | awk -F_ '{print $5}')
 
+echo 'seg 1', $segment1
 logstring=$(printf "|%5s| %7s|" $sectoruse $segment1)
 
 
@@ -29,8 +30,8 @@ for ii in 1 2 3 4; do
 	}
 
 	segment=$(ls hlsp_tica_tess_ffi_"$sectoruse"-o*-cam"$ii"-ccd"$jj"_tess_v01_ffis.sh | awk -F- '{print $2}')
-
-	[[ $segment -ne $segment1 ]] && { echo "mismatched orbit segments in download scripts, exiting"; exit 2;}
+	echo $segment, $segment1
+	[[ $segment != $segment1 ]] && { echo "mismatched orbit segments in download scripts, exiting"; exit 2;}
 	
 	scriptuse="hlsp_tica_tess_ffi_"$sectoruse"-"$segment"-cam"$ii"-ccd"$jj"_tess_v01_ffis.sh"
 	
@@ -73,7 +74,8 @@ for ii in 1 2 3 4; do
 	
 	    logstringadd=$(printf " |%9s|" $Ncommands)
 	    logstring="$logstring""$logstringadd"
-	    mv "$sectoruse""/cam$ii""-ccd$jj/"* "cam$ii""-ccd$jj"
+	    mkdir "cam$ii""-ccd$jj"/"$segment"
+	    mv "$sectoruse""/cam$ii""-ccd$jj"/* "cam$ii""-ccd$jj"/"$segment"/
 	elif [[ $Ncommands -gt $Nfiles ]]; then
 
 	    flag=0
@@ -97,7 +99,8 @@ for ii in 1 2 3 4; do
 		    flag=1;
 		    logstringadd=$(printf " |%9s|" $Ncommands)
 		    logstring="$logstring""$logstringadd"
-		    mv "$sectoruse""/cam$ii""-ccd$jj" .		    
+		    mkdir "cam$ii""-ccd$jj"/"$segment"
+		    mv "$sectoruse""/cam$ii""-ccd$jj"/* "cam$ii""-ccd$jj"/"$segment"/
 		}
 		
 	    done
@@ -117,7 +120,7 @@ echo $logstring >> ../download-log.txt
 Nremainder=0
 for ii in 1 2 3 4; do
     for jj in 1 2 3 4; do
-	nadd=$$(ls $sectoruse"/cam$ii""-ccd$j" | wc -l)
+	nadd=$(ls $sectoruse"/cam$ii""-ccd$jj" | wc -l)
 	Nremainder=$(($Nremainder+$nadd))
     done
 done

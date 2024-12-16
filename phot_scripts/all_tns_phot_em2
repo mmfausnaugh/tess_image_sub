@@ -4,19 +4,21 @@
 
 #main command is python make_phot_data_TNS --sector X --doall --mag 20 --outdir /scratch/faus/image_sub/ --tminus t1 --tplus t2
 
+set -exuo
+
 function run_phot(){
     for cam in 1 2 3 4; do
 	for ccd in 1 2 3 4; do
 	    for o in o1a o1b o2a o2b; do
-		cd cam${cam}_ccd${ccd}/${o}
+		cd cam${cam}-ccd${ccd}/${o}
 		cp ../phot.data .
 		for slice in $(ls -d slice*); do
 		    cd $slice
 
 		    for p in $(ls ../psf_file*fits); do 
-			ln -s $p
+			[[ -e $p ]] || { ln -s $p ; }
 		    done
-		    ln -s ../psf_table
+		    [[ -e $p ]] || { ln -s ../psf_table ; }
 		    if [ -d lc ] ; then
 			echo "lc dir already exists"
 		    else
@@ -27,7 +29,12 @@ function run_phot(){
 
 		    if [ $n -gt "0" ] ; then
 			if [ -e dates ]; then
-			    ~/isis/phot2.csh &
+			    srun --job-name="phot2_cam${i}-ccd${j}" \
+				 --output=%x.o%j --error=%x.e%j \
+				 --partition=nocona \
+				 --nodes 1 --cpus-per-task 1 \
+				 --ntasks-per-node=1\
+				 ${ISIS_DIR}/phot2.csh &
 			fi
 		    fi
 		    cd ..
@@ -45,14 +52,14 @@ function run_bkg_phot(){
     for cam in 1 2 3 4; do
 	for ccd in 1 2 3 4; do
 	    for o in o1a o1b o2a o2b; do
-		cd "cam$cam""_ccd$ccd""/$o"
+		cd "cam$cam""-ccd$ccd""/$o"
 
 		for slice in $(ls -d slice*); do 
 		    cd $slice 
 		    if [ ! -d bkg_phot ]; then
 			mkdir bkg_phot
 			cd bkg_phot
-			bash /pdo/users/faus/image_sub/pipeline/setup/make_bkg_phot_dir_em2
+			bash $PIPELINE_DIR/setup/make_bkg_phot_dir_em2
 		    else
 			cd bkg_phot
 		    fi
@@ -68,7 +75,12 @@ function run_bkg_phot(){
 		
 		    if [ $n -gt "0" ]; then
 			if [ -e dates ]; then 
-			    ~/isis/phot2.csh &
+			    srun --job-name="bkg_phot2_cam${i}-ccd${j}" \
+                                 --output=%x.o%j --error=%x.e%j \
+                                 --partition=nocona \
+                                 --nodes 1 --cpus-per-task 1 \
+                                 --ntasks-per-node=1\
+				 ${ISIS_DIR}/phot2.csh &
 			fi
 		    fi
 		    cd ../../
@@ -85,7 +97,7 @@ function clean_phot(){
     for cam in 1 2 3 4; do
 	for ccd in 1 2 3 4; do
 	    for o in o1a o1b o2a o2b; do
-		cd cam${cam}_ccd${ccd}/${o}
+		cd cam${cam}-ccd${ccd}/${o}
                 for slice in $(ls -d slice*); do
                     cd $slice
 		    mkdir $1
@@ -105,7 +117,7 @@ function clean_bkg_phot(){
     for cam in 1 2 3 4; do
 	for ccd in 1 2 3 4; do
 	    for o in o1a o1b o2a o2b; do 
-		cd "cam$cam""_ccd$ccd""/$o"
+		cd "cam$cam""-ccd$ccd""/$o"
                 for slice in $(ls -d slice*); do
                     cd "$slice""/bkg_phot"
 		    mkdir $1
@@ -124,7 +136,7 @@ function clean_bkg_phot(){
 function concat_phot(){
     for cam in 1 2 3 4; do
         for ccd in 1 2 3 4; do
-	    cd "cam$cam""_ccd$ccd";
+	    cd "cam$cam""-ccd$ccd";
 	    pwd;
 	    cwd=$(pwd)
 	    dtarget="$cwd"
@@ -145,13 +157,23 @@ function concat_phot(){
 			for f in $(ls lc_*); do 
 			    echo $f
 			    echo $pwd
-			    cat $f >> "$dtarget""/$1""/$f" &
+			    srun --job-name="concat_lc_cam${i}-ccd${j}" \
+                                 --output=%x.o%j --error=%x.e%j \
+                                 --partition=nocona \
+                                 --nodes 1 --cpus-per-task 1 \
+                                 --ntasks-per-node=1\
+				 cat $f >> "$dtarget""/$1""/$f" &
 			done
 			wait
 					    
 			cd ../bkg_phot/"$1"
-			for f in $(ls lc_*); do 
-			    cat $f >> "$dtarget""/bkg_phot/""$1""/$f" &
+			for f in $(ls lc_*); do
+			    srun --job-name="bkg_concat_lc_cam${i}-ccd${j}" \
+                                 --output=%x.o%j --error=%x.e%j \
+                                 --partition=nocona \
+                                 --nodes 1 --cpus-per-task 1 \
+                                 --ntasks-per-node=1\
+				 cat $f >> "$dtarget""/bkg_phot/""$1""/$f" &
 			done
 			wait
 			cd "$dtarget"

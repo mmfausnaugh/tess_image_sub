@@ -1,27 +1,30 @@
 #!/usr/bin/env bash
 
+set -exuo
 
-duse="/data/tess/image_sub/"
+duse=$DATA_DIR
 dhome=$(pwd);
 
 function do_phot(){
 
     sector=$1
+    sectoruse=$(printf "s%04s" $1)
+    echo "sector use:",$sectoruse
     cam=$2
     ccd=$3
 
     for o in o1a o1b o2a o2b; do 
     #for o in o1b; do 
 
-	cp "sector$sector""/cam$cam""_ccd$ccd""/phot.data"   "$duse""/sector$sector""/cam$cam""_ccd$ccd""/$o"
+	cp "sector$sector""/cam$cam""_ccd$ccd""/phot.data"   "$duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"
     done
     for o in o1a o1b o2a o2b; do 
     #for o in o1b; do 
-	cd "$duse""/sector$sector""/cam$cam""_ccd$ccd""/$o"
+	cd "$duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"
 	for slice in $(ls -d slice*); do
 	    cd $slice
 	    for p in $(ls ../psf_file*fits); do
-		if [ -e $ ]; then
+		if [ -e $p ]; then
 		    echo "$p already exists"
 		else
                     ln -s $p
@@ -32,7 +35,12 @@ function do_phot(){
 	    if [ ! -d lc ]; then
 		mkdir lc
 	    fi
-	    ~/isis/phot2.csh &
+	    srun --job-name="phot2_cam${i}-ccd${j}" \
+                 --output=%x.o%j --error=%x.e%j \
+                 --partition=nocona \
+                 --nodes 1 --cpus-per-task 1 \
+                 --ntasks-per-node=1\
+                 ${ISIS_DIR}/phot2.csh &
 
 	    cd ..
 	done
@@ -43,7 +51,7 @@ function do_phot(){
 	    if [ ! -d bkg_phot ]; then
                 mkdir bkg_phot
                 cd bkg_phot
-                bash /pdo/users/faus/image_sub/pipeline/setup/make_bkg_phot_dir_em2
+                bash $PIPELINE_DIR/setup/make_bkg_phot_dir_em2
             else
                 cd bkg_phot
             fi
@@ -51,7 +59,12 @@ function do_phot(){
 	    if [ ! -d lc ]; then
 		mkdir lc
 	    fi
-	    ~/isis/phot2.csh &
+	    srun --job-name="bkg_phot2_cam${i}-ccd${j}" \
+                 --output=%x.o%j --error=%x.e%j \
+                 --partition=nocona \
+                 --nodes 1 --cpus-per-task 1 \
+                 --ntasks-per-node=1\
+                 ${ISIS_DIR}/phot2.csh &
 	
 	    cd ../../;
 	done
@@ -72,8 +85,8 @@ function copy_phot(){
     mkdir "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot"
     mkdir "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc"
 
-
-    dtarget="/data/tess/image_sub/sector$1""/cam$2""_ccd$3"
+    sectoruse=$(printf "s%04d" $1)
+    dtarget=$DATA_DIR"/$sectoruse""/cam$2""-ccd$3"
     #mkdir "$dtarget""/lc"
     #mkdir "$dtarget""/bkg_phot/"
     #mkdir "$dtarget""/bkg_phot/lc/"
@@ -82,14 +95,24 @@ function copy_phot(){
 	for slice in $(ls -d "$dtarget""/$o"/slice*); do
 	    cd $slice"/lc"
 	    for f in $(ls lc_*); do
-		cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/lc/$f" &
+		srun --job-name="concat_${f}_cam${i}-ccd${j}" \
+                     --output=%x.o%j --error=%x.e%j \
+                     --partition=nocona \
+                     --nodes 1 --cpus-per-task 1 \
+                     --ntasks-per-node=1\
+		     cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/lc/$f" &
 		#cat $f >> "$dtarget""/lc/$f" &
 	    done
 	    wait
 
 	    cd ../bkg_phot/lc
 	    for f in $(ls lc_*); do
-		cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc/$f" &
+		srun --job-name="bkg_concat_${f}_cam${i}-ccd${j}" \
+                     --output=%x.o%j --error=%x.e%j \
+                     --partition=nocona \
+                     --nodes 1 --cpus-per-task 1 \
+                     --ntasks-per-node=1\
+		     cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc/$f" &
 		#cat $f >> "$dtarget""/bkg_phot/lc/$f" &
 	    done
 	    wait
@@ -121,7 +144,8 @@ function copy_phot(){
 }
 
 function clean_phot(){
-    dtarget="/data/tess/image_sub/sector$1""/cam$2""_ccd$3"
+    sectoruse=$(printf "s%04s" $1)
+    dtarget=$DATA_DIR"/$sectoruse""/cam$2""-ccd$3"
     
     for f in $(ls "$dhome""/sector$1""/cam$2""_ccd$3""/lc"); do
 
@@ -150,8 +174,8 @@ function clean_phot(){
 
 	echo "N_lc_home N_bkg_lc_home N_lines_found_in_slices"
 	echo "$ncheck $ncheck2 $nlines"
-	if [ $ncheck -eq $ncheck2 ]; then
-	    if [ $ncheck -eq $nlines ]; then
+	if [[ $ncheck == $ncheck2 ]]; then
+	    if [[ $ncheck == $nlines ]]; then
 		echo "$f passed, deleted from slice directories"
 		for o in o1a o1b o2a o2b; do 
 		    cd $o

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euxo
+set -euo
 
 for i in 1 2 3 4; do
     for j in 1 2 3 4; do
@@ -12,9 +12,9 @@ for i in 1 2 3 4; do
 	srun --job-name="make_ref_cam${i}-ccd${j}" \
              --output=%x.o%j --error=%x.e%j \
              --partition=nocona \
+	     --account=mfausnau_grp\
              --nodes 1 --cpus-per-task 1 \
              --ntasks-per-node=1 \
-	     --account= mfausnau_grp\
 	     ${ISIS_DIR}/ref.csh &
 	cd ../../
     done

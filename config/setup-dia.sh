@@ -14,3 +14,7 @@ export WCSTOOLS_PATH=/home/mfausnau/wcstools-3.9.7/bin
 export ISIS_PATH=/lustre/research/mfausnau/software/isis/bin
 
 export PATH="$PIPELINE_PATH:$ISIS_PATH:$WCSTOOLS_PATH:$PATH"
+
+export NCORES=512
+
+export ACCOUNT="mfausnau_grp"

@@ -6,13 +6,13 @@
 
 # Make slice directories with the corresponding dates file
 
-set -euxo
+set -euo
 
 python "${PIPELINE_DIR}/setup/"make_parallel.py $1
 
 
 for (( ii=0 ; ii<$1 ; ii++ )); do
-    slice=$(printf "slice%03d" $ii)
+    slice=$(printf "slice%04d" $ii)
     if [ -d $slice ]; then 
 	# For each slice create the process_config files
 	sed "s@\sDirectory@$slice/  Directory@" process_config | \
