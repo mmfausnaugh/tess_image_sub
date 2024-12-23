@@ -4,21 +4,21 @@
 
 #main command is python make_phot_data_TNS --sector X --doall --mag 20 --outdir /scratch/faus/image_sub/ --tminus t1 --tplus t2
 
-set -exuo
+set -euo
 
 function run_phot(){
     for cam in 1 2 3 4; do
 	for ccd in 1 2 3 4; do
 	    for o in o1a o1b o2a o2b; do
-		cd cam${cam}-ccd${ccd}/${o}
+ 		cd cam${cam}-ccd${ccd}/${o}
 		cp ../phot.data .
 		for slice in $(ls -d slice*); do
 		    cd $slice
 
 		    for p in $(ls ../psf_file*fits); do 
-			[[ -e $p ]] || { ln -s $p ; }
+			[[ -e ${p:3} ]] || { ln -s $p ; }
 		    done
-		    [[ -e $p ]] || { ln -s ../psf_table ; }
+		    [[ -e psf_table ]] || { ln -s ../psf_table ; }
 		    if [ -d lc ] ; then
 			echo "lc dir already exists"
 		    else
@@ -29,9 +29,10 @@ function run_phot(){
 
 		    if [ $n -gt "0" ] ; then
 			if [ -e dates ]; then
-			    srun --job-name="phot2_cam${i}-ccd${j}" \
+			    srun --job-name="phot2_cam${cam}-ccd${ccd}" \
 				 --output=%x.o%j --error=%x.e%j \
 				 --partition=nocona \
+				 --account=${ACCOUNT} \
 				 --nodes 1 --cpus-per-task 1 \
 				 --ntasks-per-node=1\
 				 ${ISIS_DIR}/phot2.csh &
@@ -75,9 +76,10 @@ function run_bkg_phot(){
 		
 		    if [ $n -gt "0" ]; then
 			if [ -e dates ]; then 
-			    srun --job-name="bkg_phot2_cam${i}-ccd${j}" \
+			    srun --job-name="bkg_phot2_cam${cam}-ccd${ccd}" \
                                  --output=%x.o%j --error=%x.e%j \
                                  --partition=nocona \
+				 --account=${ACCOUNT} \
                                  --nodes 1 --cpus-per-task 1 \
                                  --ntasks-per-node=1\
 				 ${ISIS_DIR}/phot2.csh &
@@ -157,9 +159,10 @@ function concat_phot(){
 			for f in $(ls lc_*); do 
 			    echo $f
 			    echo $pwd
-			    srun --job-name="concat_lc_cam${i}-ccd${j}" \
+			    srun --job-name="concat_lc_cam${f}" \
                                  --output=%x.o%j --error=%x.e%j \
                                  --partition=nocona \
+				 --account=${ACCOUNT} \
                                  --nodes 1 --cpus-per-task 1 \
                                  --ntasks-per-node=1\
 				 cat $f >> "$dtarget""/$1""/$f" &
@@ -168,9 +171,10 @@ function concat_phot(){
 					    
 			cd ../bkg_phot/"$1"
 			for f in $(ls lc_*); do
-			    srun --job-name="bkg_concat_lc_cam${i}-ccd${j}" \
+			    srun --job-name="bkg_concat_lc_${f}" \
                                  --output=%x.o%j --error=%x.e%j \
                                  --partition=nocona \
+				 --account=${ACCOUNT} \
                                  --nodes 1 --cpus-per-task 1 \
                                  --ntasks-per-node=1\
 				 cat $f >> "$dtarget""/bkg_phot/""$1""/$f" &
@@ -203,14 +207,22 @@ function concat_phot(){
 }
 
 
-duse='/data/tess/image_sub/'
+duse=${DATA_DIR}
 #duse='/data/tess2/image_sub/'
-dscript='/pdo/users/faus/python/catalog2tess_px/scripts'
+dscript=${PYTHONPATH}'/catalog2tess_px/scripts'
 
-for sector in  81; do
+for sector in  83; do
     ##lc discovery
-    python ${dscript}/make_phot_data_TNS --sector $sector --doall --mag 28 --outdir $duse --tminus 5 --tplus 30
-    cd "${duse}/sector${sector}"
+
+    srun --job-name="catalog2tess_pix_transient_phot_s$sector" \
+         --output=%x.o%j --error=%x.e%j \
+         --partition=nocona \
+         --account=${ACCOUNT} \
+         --nodes 1 --cpus-per-task 1 \
+         --ntasks-per-node=1\
+	 python ${dscript}/make_phot_data_TNS --sector $sector --doall --mag 28 --outdir $duse --tminus 5 --tplus 30
+    suse=$(printf "%.4d" ${sector})
+    cd "${duse}/s${suse}"
     run_phot
     run_bkg_phot
     wait

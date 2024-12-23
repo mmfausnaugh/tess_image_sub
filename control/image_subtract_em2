@@ -21,6 +21,7 @@ for i in 1 2 3 4; do
 	    srun --job-name="subtract_cam${i}-ccd${j}" \
 		 --output=%x.o%j --error=%x.e%j \
 		 --partition=nocona \
+		 --account=${ACCOUNT} \
 		 --nodes 1 --cpus-per-task 1 \
 		 --ntasks-per-node=1\
 		 ${ISIS_DIR}/subtract.csh & 
@@ -28,12 +29,14 @@ for i in 1 2 3 4; do
 	done
 	echo "waiting on image subtract"
 	wait
+	echo "done!"
 	#do columns
 	for s in $(ls -d slice*); do
 	    cd $s
 	    srun --job-name="strap_correct_cam${i}-ccd${j}" \
 		 --output=%x.o%j --error=%x.e%j \
 		 --partition=nocona \
+		 --account=${ACCOUNT} \
 		 --nodes 1 --cpus-per-task 1 \
 		 --ntasks-per-node=1 \
 		 ${PIPELINE_DIR}/util/correct_straps.py & 
@@ -41,12 +44,14 @@ for i in 1 2 3 4; do
 	done
 	echo "waiting on strap correction"
 	wait
+	echo "done!"
 	#median filter
 	for s in $(ls -d slice*); do
 	    cd $s
 	    srun --job-name="median_filter_cam${i}-ccd${j}" \
 		 --output=%x.o%j --error=%x.e%j \
 		 --partition=nocona \
+		 --account=${ACCOUNT} \
 		 --nodes 1 --cpus-per-task 1 \
 		 --ntasks-per-node=1 \
 		 ${PIPELINE_DIR}/util/median_filter_diff_row_col.py & 
@@ -54,7 +59,7 @@ for i in 1 2 3 4; do
 	done
 	echo "waiting on median filter"
 	wait 
-
+	echo "done!"
 	##for slice in $(ls -d slice*); do
         ##    cd $slice
 	##    

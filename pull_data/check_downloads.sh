@@ -25,19 +25,21 @@ for ii in 1 2 3 4; do
     for jj in 1 2 3 4; do
 
 	echo $ii $jj
-	[[ -d "cam$ii""-ccd$jj" ]] || {
-	    mkdir "cam$ii""-ccd$jj" ;
-	}
 
 	segment=$(ls hlsp_tica_tess_ffi_"$sectoruse"-o*-cam"$ii"-ccd"$jj"_tess_v01_ffis.sh | awk -F- '{print $2}')
 	echo $segment, $segment1
 	[[ $segment != $segment1 ]] && { echo "mismatched orbit segments in download scripts, exiting"; exit 2;}
+
+	[[ -d "cam$ii""-ccd$jj"/"$segment" ]] || {
+	    mkdir -p "cam$ii""-ccd$jj"/"$segment" ;
+	}
+
 	
 	scriptuse="hlsp_tica_tess_ffi_"$sectoruse"-"$segment"-cam"$ii"-ccd"$jj"_tess_v01_ffis.sh"
 	
 	#subtract 1 for the shebang
 	Ncommands=$(wc -l $scriptuse | awk '{print $1-1}')
-	echo "blarg" $Ncommands $scriptuse
+	echo "Ncommands (N files):" $Ncommands $scriptuse
 	
 	if [[ -d "$sectoruse""/cam$ii""-ccd$jj" ]]; then
 	    Nfiles=$(ls "$sectoruse""/cam$ii""-ccd$jj"/hlsp*fits | wc -l)
@@ -74,7 +76,6 @@ for ii in 1 2 3 4; do
 	
 	    logstringadd=$(printf " |%9s|" $Ncommands)
 	    logstring="$logstring""$logstringadd"
-	    mkdir "cam$ii""-ccd$jj"/"$segment"
 	    mv "$sectoruse""/cam$ii""-ccd$jj"/* "cam$ii""-ccd$jj"/"$segment"/
 	elif [[ $Ncommands -gt $Nfiles ]]; then
 
@@ -99,7 +100,6 @@ for ii in 1 2 3 4; do
 		    flag=1;
 		    logstringadd=$(printf " |%9s|" $Ncommands)
 		    logstring="$logstring""$logstringadd"
-		    mkdir "cam$ii""-ccd$jj"/"$segment"
 		    mv "$sectoruse""/cam$ii""-ccd$jj"/* "cam$ii""-ccd$jj"/"$segment"/
 		}
 		
@@ -138,3 +138,4 @@ for downloadscript in $(ls hlsp_tica*sh); do
     fi
 done
 
+echo "finished check_downloads.sh"
