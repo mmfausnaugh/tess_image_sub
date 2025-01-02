@@ -4,7 +4,7 @@
 
 #main command is python make_phot_data_TNS --sector X --doall --mag 20 --outdir /scratch/faus/image_sub/ --tminus t1 --tplus t2
 
-set -euo
+set -uo
 
 function run_phot(){
     for cam in 1 2 3 4; do
@@ -102,8 +102,9 @@ function clean_phot(){
 		cd cam${cam}-ccd${ccd}/${o}
                 for slice in $(ls -d slice*); do
                     cd $slice
-		    mkdir $1
+		    [[ -d "$1" ]] ||{ mkdir $1 ;}
 		    if [ -e dates ]; then
+			pwd
 			mv lc/* $1
 			#mkdir lc
 		    fi
@@ -122,7 +123,7 @@ function clean_bkg_phot(){
 		cd "cam$cam""-ccd$ccd""/$o"
                 for slice in $(ls -d slice*); do
                     cd "$slice""/bkg_phot"
-		    mkdir $1
+		    [[ -d "$1" ]] || { mkdir $1 ;}
 		    if [ -e dates ]; then 
 			mv lc/* $1
 		    fi		    
@@ -143,10 +144,11 @@ function concat_phot(){
 	    cwd=$(pwd)
 	    dtarget="$cwd"
 	    echo "dtarget is:" $dtarget
-	    mkdir "$1"
-	    mkdir "bkg_phot"
+
+	    [[ -e "$1" ]] || { mkdir "$1" ; }
+	    [[ -e mkdir ]] || { mkdir  "bkg_phot" ; }
 	    cd bkg_phot
-	    mkdir "$1"
+	    [[ -e "$1" ]] || { mkdir "$1" ; }
 	    cd ../
 
 	    for o in o1a o1b o2a o2b; do
@@ -158,26 +160,14 @@ function concat_phot(){
 			cd $slice"/$1"
 			for f in $(ls lc_*); do 
 			    echo $f
-			    echo $pwd
-			    srun --job-name="concat_lc_cam${f}" \
-                                 --output=%x.o%j --error=%x.e%j \
-                                 --partition=nocona \
-				 --account=${ACCOUNT} \
-                                 --nodes 1 --cpus-per-task 1 \
-                                 --ntasks-per-node=1\
-				 cat $f >> "$dtarget""/$1""/$f" &
+			    echo pwd
+			    cat $f >> "$dtarget""/$1""/$f" &
 			done
 			wait
 					    
 			cd ../bkg_phot/"$1"
 			for f in $(ls lc_*); do
-			    srun --job-name="bkg_concat_lc_${f}" \
-                                 --output=%x.o%j --error=%x.e%j \
-                                 --partition=nocona \
-				 --account=${ACCOUNT} \
-                                 --nodes 1 --cpus-per-task 1 \
-                                 --ntasks-per-node=1\
-				 cat $f >> "$dtarget""/bkg_phot/""$1""/$f" &
+			    cat $f >> "$dtarget""/bkg_phot/""$1""/$f" &
 			done
 			wait
 			cd "$dtarget"
@@ -198,8 +188,13 @@ function concat_phot(){
 	    	mv tmp $f
 	    done
 
+	    
 	    #back to cam?_ccd?
 	    cd $dtarget
+	    
+	    #grab the phot.data
+	    mv o1a/phot.data $1
+
 	    cd ../
 	done
     done
@@ -211,7 +206,8 @@ duse=${DATA_DIR}
 #duse='/data/tess2/image_sub/'
 dscript=${PYTHONPATH}'/catalog2tess_px/scripts'
 
-for sector in  83; do
+#for sector in  84 85 86; do
+for sector in  86 87; do
     ##lc discovery
 
     srun --job-name="catalog2tess_pix_transient_phot_s$sector" \

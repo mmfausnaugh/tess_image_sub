@@ -4,7 +4,9 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 import numpy as np
 from astropy.io import fits
 import argparse
+import os
 import sys
+sys.path.insert(0, os.environ.get('PIPELINE_DIR') )
 
 import matplotlib.pyplot as plt
 

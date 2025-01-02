@@ -30,12 +30,14 @@ def cut_multisector_data(x,y,z):
             for ii in range(len(t_ranges)):
                 x,y,z = cut_date_range(t_ranges[ii], x,y,z)
         
-    tjd_cut = sp.genfromtxt('/pdo/users/faus/image_sub/pipeline/tess_time/cut_ffi/cut_fin_data',usecols=(2))
+    tjd_cut = np.genfromtxt(os.path.join(
+        os.environ.get("PIPELINE_DIR"), 'tess_time/cut_ffi/cut_fin_data'),
+                            usecols=(2))
     m = []
     for ii,epoch in enumerate(x):
-        if any(sp.isclose(tjd_cut,epoch, atol=1.e-4)):
+        if any(np.isclose(tjd_cut,epoch, atol=1.e-4)):
             m.append(ii)
-    return sp.delete(x,m), sp.delete(y,m), sp.delete(z,m) 
+    return np.delete(x,m), np.delete(y,m), np.delete(z,m) 
 
 def cut_data(x,y,z, sector, cam, ccd, bad_cal_times = None):
     s4_time_cut = [1421.209, 1424.4]
@@ -48,17 +50,18 @@ def cut_data(x,y,z, sector, cam, ccd, bad_cal_times = None):
         for ii in range(len(t_ranges)):
             x,y,z = cut_date_range(t_ranges[ii], x,y,z)
         
-    tjd_cut = sp.genfromtxt('/pdo/users/faus/image_sub/pipeline/tess_time/cut_ffi/cut_fin_data',usecols=(2))
+    tjd_cut = np.genfromtxt(os.path.join(
+        os.environ.get("PIPELINE_DIR"), 'tess_time/cut_ffi/cut_fin_data'),usecols=(2))
     m = []
     for ii,epoch in enumerate(x):
-        if any(sp.isclose(tjd_cut,epoch, atol=1.e-4)):
+        if any(np.isclose(tjd_cut,epoch, atol=1.e-4)):
             m.append(ii)
         if bad_cal_times is not None:
-            if any(sp.isclose(bad_cal_times, epoch, atol=1.e-4)):
+            if any(np.isclose(bad_cal_times, epoch, atol=1.e-4)):
                 m.append(ii)
 
     m = list(np.unique(m))
-    return sp.delete(x,m), sp.delete(y,m), sp.delete(z,m) 
+    return np.delete(x,m), np.delete(y,m), np.delete(z,m) 
 
 
 def bad_calibration2TJD(lc_file):
@@ -88,9 +91,10 @@ def get_cut_indices(x):
     # use sp.delete(arr,m) to delete the bad data, where arr matches x
     #in size/index
     s4_time_cut = [1421.209, 1424.4]
-    m = sp.where( ( x > s4_time_cut[0]) & ( x < s4_time_cut[1]) )[0]
-    tjd_cut = sp.genfromtxt('/pdo/users/faus/image_sub/pipeline/tess_time/cut_ffi/cut_fin_data',usecols=(2))
+    m = np.where( ( x > s4_time_cut[0]) & ( x < s4_time_cut[1]) )[0]
+    tjd_cut = np.genfromtxt(os.path.join(
+        os.environ.get("PIPELINE_DIR"), 'tess_time/cut_ffi/cut_fin_data'),usecols=(2))
     for ii,epoch in enumerate(x):
-        if any(sp.isclose(tjd_cut,epoch, atol=1.e-4)):
-            m = sp.r_[m, ii]
+        if any(np.isclose(tjd_cut,epoch, atol=1.e-4)):
+            m = np.r_[m, ii]
     return m

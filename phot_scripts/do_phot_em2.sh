@@ -95,24 +95,14 @@ function copy_phot(){
 	for slice in $(ls -d "$dtarget""/$o"/slice*); do
 	    cd $slice"/lc"
 	    for f in $(ls lc_*); do
-		srun --job-name="concat_${f}_cam${i}-ccd${j}" \
-                     --output=%x.o%j --error=%x.e%j \
-                     --partition=nocona \
-                     --nodes 1 --cpus-per-task 1 \
-                     --ntasks-per-node=1\
-		     cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/lc/$f" &
+		cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/lc/$f" &
 		#cat $f >> "$dtarget""/lc/$f" &
 	    done
 	    wait
 
 	    cd ../bkg_phot/lc
 	    for f in $(ls lc_*); do
-		srun --job-name="bkg_concat_${f}_cam${i}-ccd${j}" \
-                     --output=%x.o%j --error=%x.e%j \
-                     --partition=nocona \
-                     --nodes 1 --cpus-per-task 1 \
-                     --ntasks-per-node=1\
-		     cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc/$f" &
+		cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc/$f" &
 		#cat $f >> "$dtarget""/bkg_phot/lc/$f" &
 	    done
 	    wait

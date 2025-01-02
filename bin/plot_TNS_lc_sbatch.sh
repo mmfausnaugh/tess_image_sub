@@ -1,0 +1,1 @@
+../plotting/plot_TNS_lc_sbatch.sh

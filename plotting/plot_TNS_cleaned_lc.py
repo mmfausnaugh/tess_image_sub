@@ -8,19 +8,18 @@ import matplotlib.pyplot as plt
 import sys
 import re
 import glob
-sys.path.insert(0,'/pdo/users/faus')
+sys.path.insert(0,os.environ.get('PYTHONPATH'))
 from catalog2tess_px.catalogs.TNS import TNS
 import argparse
 
-from tools.tools import rebin
 
-cat2pix_dir = '/pdo/users/faus/python/catalog2tess_px/'
+cat2pix_dir = os.path.join(os.environ.get('PYTHONPATH'), 'catalog2tess_px/')
 
 def plot_sky(ifile, axuse):
     x,y = np.genfromtxt(ifile,unpack=1,usecols=(0,6))
     wdir = os.path.abspath(os.path.dirname(ifile))
-    sector_idx = wdir.find('sector')
-    sector     = wdir[sector_idx : sector_idx+8]
+    sector_search = re.search('s(\d\d\d\d)',wdir)
+    sector = int(sector_search.group(1))
     cam_idx = wdir.find('cam')
     cam = wdir[cam_idx : cam_idx+4]
     ccd_idx = wdir.find('ccd')
@@ -56,8 +55,9 @@ def get_meta_data(ifile):
     wdir  =  os.path.abspath( os.path.dirname(ifile))
 
     #sector number
-    sector_search = re.search('sector(\d\d)',wdir)
-    sector = sector_search.group(1)
+    sector_search = re.search('s(\d\d\d\d)',wdir)
+    sector = int(sector_search.group(1))
+        
     cam_search = re.search('cam(\d)',wdir)
     cam = cam_search.group(1)
     ccd_search = re.search('ccd(\d)',wdir)
