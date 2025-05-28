@@ -17,7 +17,7 @@ if [[ $o == 'o1a' ]]; then
     #and to which ref_list gets convolved to match
     echo "running ccd_match_script_em2"
     srun --job-name="setup_ccd_matches" \
-	 --output=%x.o%j --error=%x.e%j \
+	 --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
 	 --partition=nocona \
 	 --account=${ACCOUNT} \
 	 --nodes 1 --cpus-per-task 1 \
@@ -44,7 +44,7 @@ for i in 1 2 3 4; do
 	echo ${PIPELINE_DIR}
 	ls ${PIPELINE_DIR}/setup/make_dates
 	srun --job-name="make_dates_cam$i""-ccd$j" \
-	     --output=%x.o%j --error=%x.e%j \
+	     --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
 	     --partition=nocona \
 	     --account=${ACCOUNT} \
 	     --nodes 1 --cpus-per-task 1 \
@@ -61,7 +61,7 @@ for i in 1 2 3 4; do
 	cd "cam$i""-ccd$j"/"$o"
 	echo "running setup parallel in cam$i""-ccd$j"
 	srun --job-name="setup_parallel" \
-	     --output=%x.o%j --error=%x.e%j \
+	     --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
 	     --partition=nocona \
 	     --account=${ACCOUNT} \
 	     --nodes 1 --cpus-per-task 1 \
@@ -80,7 +80,7 @@ for i in 1 2 3 4; do
 	for slice in $(ls -d slice*); do 
 	    cd $slice
 	    srun  --job-name="quick_smooth_cam$i""-ccd$j" \
-		 --output=%x.o%j --error=%x.e%j \
+		 --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
 		 --partition=nocona \
 		 --account=${ACCOUNT} \
 		 --nodes 1 --cpus-per-task 1 \

@@ -19,7 +19,7 @@ for i in 1 2 3 4; do
 	    cd $s
 	    pwd
 	    srun --job-name="subtract_cam${i}-ccd${j}" \
-		 --output=%x.o%j --error=%x.e%j \
+		 --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
 		 --partition=nocona \
 		 --account=${ACCOUNT} \
 		 --nodes 1 --cpus-per-task 1 \
@@ -34,7 +34,7 @@ for i in 1 2 3 4; do
 	for s in $(ls -d slice*); do
 	    cd $s
 	    srun --job-name="strap_correct_cam${i}-ccd${j}" \
-		 --output=%x.o%j --error=%x.e%j \
+		 --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
 		 --partition=nocona \
 		 --account=${ACCOUNT} \
 		 --nodes 1 --cpus-per-task 1 \
@@ -49,7 +49,7 @@ for i in 1 2 3 4; do
 	for s in $(ls -d slice*); do
 	    cd $s
 	    srun --job-name="median_filter_cam${i}-ccd${j}" \
-		 --output=%x.o%j --error=%x.e%j \
+		 --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
 		 --partition=nocona \
 		 --account=${ACCOUNT} \
 		 --nodes 1 --cpus-per-task 1 \

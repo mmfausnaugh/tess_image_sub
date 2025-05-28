@@ -5,9 +5,28 @@ from astropy.io import fits
 import os
 import re
 import sys
+import glob
 
+def make_file_dict():
+    dates_list = glob.glob('slice*/dates')
+    dates_list = np.sort(dates_list)
+    fins = {}
+    for dates in dates_list:
+        files = np.genfromtxt(dates, usecols=(0), dtype=str)
+        for f in files:
+            fin = int(f.split('-')[2]) 
+            fins[fin] = dates.split('/')[0]
 
+    return fins
+
+        
 def make_rms(inlist ):
+
+    if '/o' in os.getcwd():
+        lookup_dict = make_file_dict()
+    else:
+        lookup_dict = None
+        
     #assumes files in inlist are in current working directory
     avg = 0
     square = 0
@@ -19,8 +38,13 @@ def make_rms(inlist ):
         #infile_use = glob.glob(dirlook + '/o1a/tess*' + str(infile) + '*')[0]
         #print(dirlook, str(infile), infile_use)
 
-        d = fits.open(infile)[0].data
+        if lookup_dict is not None:
+            fin = int(infile.split('-')[2])
+            slice_use = lookup_dict[fin]
 
+            d = fits.open( os.path.join(slice_use, 'conv_' + infile)  )[0].data
+        else:
+            d = fits.open( infile )[0].data
         avg += d
         square += d**2
         N += 1

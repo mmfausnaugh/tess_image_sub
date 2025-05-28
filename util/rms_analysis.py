@@ -10,9 +10,10 @@ import os
 import sys
 import glob
 import re
-sys.path.insert(0,'/pdo/users/faus')
+sys.path.insert(0,os.getenv('PYTHONPATH'))
 from catalog2tess_px.catalogs.HyperLedaCsv import HyperLedaCsv
 import argparse
+sys.path.insert(0,os.getenv('PIPELINE_DIR'))
 from tess_time.cut_ffi.cut_data import cut_data
 
 def get_meta_data(ifile):
@@ -28,7 +29,9 @@ def get_meta_data(ifile):
     ccd = ccd_search.group(1)
                                
 
-    cat = HyperLedaCsv('/pdo/users/faus/python/catalog2tess_px/HyperLEDA/s{:02d}/hyperleda_s{:02d}_cam{}.txt'.format(int(sector), int(sector), cam))
+    cat = HyperLedaCsv(os.path.join(os.getenv('PYTHONPATH'),
+                                    'catalog2tess_px/HyperLEDA/s{:02d}/hyperleda_s{:02d}_cam{}.txt'.format(int(sector), int(sector), cam)
+    ))
 
     obj = ifile.split('_')[-2]
     print(obj)
@@ -128,7 +131,7 @@ def main():
         #first load the file
         ifile = os.path.abspath(ifile)
         print(ifile)
-
+        
 
         #sector number
         sector_search = re.search('sector(\d\d)',ifile)
@@ -147,7 +150,9 @@ def main():
             
  
         #find the light curve
-        dstem = '/data/tess/image_sub/sector{}/cam{}_ccd{}/'.format(sector,cam,ccd)
+        dstem = os.path.join(
+            os.getenv('DATA_DIR'),'s{:04d}/cam{}-ccd{}/'.format(int(sector),cam,ccd)
+            )
         #dstem= './'
 
         #try:

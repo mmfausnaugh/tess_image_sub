@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -exuo
+set -euo
 
 duse=$DATA_DIR
 dhome=$(pwd);
@@ -8,36 +8,32 @@ dhome=$(pwd);
 function do_phot(){
 
     sector=$1
-    sectoruse=$(printf "s%04s" $1)
+    sectoruse=$(printf "s%04d" $1)
     echo "sector use:",$sectoruse
     cam=$2
     ccd=$3
 
     for o in o1a o1b o2a o2b; do 
-    #for o in o1b; do 
+    #for o in o2b; do 
 
 	cp "sector$sector""/cam$cam""_ccd$ccd""/phot.data"   "$duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"
     done
     for o in o1a o1b o2a o2b; do 
-    #for o in o1b; do 
 	cd "$duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"
 	for slice in $(ls -d slice*); do
 	    cd $slice
 	    for p in $(ls ../psf_file*fits); do
-		if [ -e $p ]; then
-		    echo "$p already exists"
-		else
-                    ln -s $p
-		    ln -s ../psf_table
-		fi
+                [[ -e ${p:3:30} ]] || { ln -s $p ; }
             done
-
+	    [[ -e psf_table ]] || { ln -s ../psf_table ; }
+	    
 	    if [ ! -d lc ]; then
 		mkdir lc
 	    fi
-	    srun --job-name="phot2_cam${i}-ccd${j}" \
+	    srun --job-name="phot2_cam${cam}-ccd${ccd}" \
                  --output=%x.o%j --error=%x.e%j \
                  --partition=nocona \
+		 --account=${ACCOUNT} \
                  --nodes 1 --cpus-per-task 1 \
                  --ntasks-per-node=1\
                  ${ISIS_DIR}/phot2.csh &
@@ -59,9 +55,10 @@ function do_phot(){
 	    if [ ! -d lc ]; then
 		mkdir lc
 	    fi
-	    srun --job-name="bkg_phot2_cam${i}-ccd${j}" \
+	    srun --job-name="bkg_phot2_cam${cam}-ccd${ccd}" \
                  --output=%x.o%j --error=%x.e%j \
                  --partition=nocona \
+		 --account=${ACCOUNT} \
                  --nodes 1 --cpus-per-task 1 \
                  --ntasks-per-node=1\
                  ${ISIS_DIR}/phot2.csh &
@@ -81,9 +78,9 @@ function do_phot(){
 
 function copy_phot(){
 
-    mkdir "$dhome""/sector$1""/cam$2""_ccd$3""/lc"
-    mkdir "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot"
-    mkdir "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc"
+    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/lc" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/lc" ; }
+    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot" ; }
+    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc" ; }
 
     sectoruse=$(printf "s%04d" $1)
     dtarget=$DATA_DIR"/$sectoruse""/cam$2""-ccd$3"
@@ -91,7 +88,6 @@ function copy_phot(){
     #mkdir "$dtarget""/bkg_phot/"
     #mkdir "$dtarget""/bkg_phot/lc/"
     for o in o1a o1b o2a o2b; do
-
 	for slice in $(ls -d "$dtarget""/$o"/slice*); do
 	    cd $slice"/lc"
 	    for f in $(ls lc_*); do
@@ -134,7 +130,7 @@ function copy_phot(){
 }
 
 function clean_phot(){
-    sectoruse=$(printf "s%04s" $1)
+    sectoruse=$(printf "s%04d" $1)
     dtarget=$DATA_DIR"/$sectoruse""/cam$2""-ccd$3"
     
     for f in $(ls "$dhome""/sector$1""/cam$2""_ccd$3""/lc"); do

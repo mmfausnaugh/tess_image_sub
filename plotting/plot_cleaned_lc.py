@@ -8,7 +8,7 @@ import sys
 import re
 import glob
 import argparse
-sys.path.insert(0,'/pdo/users/faus')
+sys.path.insert(0,os.getenv('PYTHONPATH'))
 from catalog2tess_px.catalogs.AsciiCol import AsciiCol
 
 def get_meta_data(ifile, metafile, decimal=False):

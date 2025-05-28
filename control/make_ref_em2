@@ -10,7 +10,7 @@ for i in 1 2 3 4; do
 	done
 
 	srun --job-name="make_ref_cam${i}-ccd${j}" \
-             --output=%x.o%j --error=%x.e%j \
+             --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
              --partition=nocona \
 	     --account=mfausnau_grp\
              --nodes 1 --cpus-per-task 1 \

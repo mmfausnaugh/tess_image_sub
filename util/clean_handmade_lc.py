@@ -8,9 +8,10 @@ import matplotlib.pyplot as plt
 import sys
 import re
 import glob
-sys.path.insert(0,'/pdo/users/faus')
+sys.path.insert(0,os.getenv('PYTHONPATH'))
 from catalog2tess_px.catalogs.AsciiCol import AsciiCol
 import argparse
+sys.path.insert(0,os.getenv('PIPELINE_DIR'))
 from tess_time.cut_ffi.cut_data import cut_data, cut_multisector_data
 from tess_time.btjd.btjd_correction import btjd_correction
 
@@ -21,8 +22,12 @@ def get_meta_data(ifile,metafile,decimal=False):
     wdir  =  os.path.abspath( os.path.dirname(ifile))
 
     #sector number
-    sector_search = re.search('sector(\d\d)',wdir)
-    sector = sector_search.group(1)
+    try:
+        sector_search = re.search('s(\d\d\d\d)',wdir)
+        sector = sector_search.group(1)
+    except AttributeError:
+        sector_search = re.search('sector(\d\d)',wdir)
+        sector = sector_search.group(1)
 
     #cam, ccd number
     cam_search = re.search('cam(\d)',wdir)
@@ -120,6 +125,9 @@ def clean_lc_parallel(intuple):
     if not multisector:
         sector_idx = wdir.find('sector')
         sector     = wdir[sector_idx : sector_idx+8]
+        #sector_idx = wdir.find('sector')
+        #sector_search = re.search('s(\d\d\d\d)',wdir)
+        
         cam_idx = wdir.find('cam')
         cam = wdir[cam_idx : cam_idx+4]
         ccd_idx = wdir.find('ccd')

@@ -207,7 +207,7 @@ duse=${DATA_DIR}
 dscript=${PYTHONPATH}'/catalog2tess_px/scripts'
 
 #for sector in  84 85 86; do
-for sector in  86 87; do
+for sector in  87 88 89 90 91 92; do
     ##lc discovery
 
     srun --job-name="catalog2tess_pix_transient_phot_s$sector" \

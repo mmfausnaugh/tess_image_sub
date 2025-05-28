@@ -2,8 +2,8 @@
 
 
 #SBATCH --job-name=clean_lcs 
-#SBATCH --output=%x.o%j
-#SBATCH --error=%x.e%j 
+#SBATCH --output=${LOG_DIR}/%x.o%j
+#SBATCH --error=${LOG_DIR}/%x.e%j 
 #SBATCH --partition=nocona 
 #SBATCH --nodes 1
 #SBATCH --cpus-per-task 2 
