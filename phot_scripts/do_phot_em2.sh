@@ -30,17 +30,37 @@ function do_phot(){
 	    if [ ! -d lc ]; then
 		mkdir lc
 	    fi
+
+	    [[ -e kernel_data.tgz ]] && { tar -xzf kernel_data.tgz; }
+	    
 	    srun --job-name="phot2_cam${cam}-ccd${ccd}" \
-                 --output=%x.o%j --error=%x.e%j \
+                 --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
                  --partition=nocona \
 		 --account=${ACCOUNT} \
                  --nodes 1 --cpus-per-task 1 \
                  --ntasks-per-node=1\
                  ${ISIS_DIR}/phot2.csh &
+	    
+	    [[ -e 'kernel_data.tgz' ]] || {
+		srun --job-name="phot2_cam${cam}-ccd${ccd}" \
+		     --output=/dev/null --error=/dev/null \
+		     --partition=nocona \
+		     --account=${ACCOUNT} \
+		     --nodes 1 --cpus-per-task 1 \
+		     --ntasks-per-node=1\
+		     tar -czf kernel_data.tgz {kt_,kc_}*fits &
+	    }
 
 	    cd ..
 	done
 	wait
+
+	#clean up kernel files
+	for slice in $(ls -d slice*); do
+	    cd "$slice"
+	    rm kt_*fits kc_*fits
+	    cd ..
+	done
 
 	for slice in $(ls -d slice*); do
 	    cd "$slice"
@@ -55,17 +75,37 @@ function do_phot(){
 	    if [ ! -d lc ]; then
 		mkdir lc
 	    fi
+	    [[ -e kernel_data.tgz ]] && { tar -xzf kernel_data.tgz; }
+
 	    srun --job-name="bkg_phot2_cam${cam}-ccd${ccd}" \
-                 --output=%x.o%j --error=%x.e%j \
+                 --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
                  --partition=nocona \
 		 --account=${ACCOUNT} \
                  --nodes 1 --cpus-per-task 1 \
                  --ntasks-per-node=1\
                  ${ISIS_DIR}/phot2.csh &
+	    
+	    [[ -e 'kernel_data.tgz' ]] || {
+                srun --job-name="phot2_cam${cam}-ccd${ccd}" \
+                     --output=/dev/null --error=/dev/null \
+                     --partition=nocona \
+                     --account=${ACCOUNT} \
+                     --nodes 1 --cpus-per-task 1 \
+                     --ntasks-per-node=1\
+                     tar -czf kernel_data.tgz {kt_,kc_}*fits &
+            }
 	
 	    cd ../../;
 	done
 	wait
+	
+	#clean up kernel files
+	for slice in $(ls -d slice*); do
+	    cd "$slice"/bkg_phot
+	    rm kt_*fits kc_*fits
+	    cd ../../
+	done
+
 	cd ../ ;
     done
     

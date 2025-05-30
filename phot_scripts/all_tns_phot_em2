@@ -29,18 +29,38 @@ function run_phot(){
 
 		    if [ $n -gt "0" ] ; then
 			if [ -e dates ]; then
+
+			    [[ -e kernel_data.tgz ]] && { tar -xzf kernel_data.tgz; }
+			    
 			    srun --job-name="phot2_cam${cam}-ccd${ccd}" \
-				 --output=%x.o%j --error=%x.e%j \
+				 --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
 				 --partition=nocona \
 				 --account=${ACCOUNT} \
 				 --nodes 1 --cpus-per-task 1 \
 				 --ntasks-per-node=1\
 				 ${ISIS_DIR}/phot2.csh &
+			    [[ -e 'kernel_data.tgz' ]] || {
+				srun --job-name="phot2_cam${cam}-ccd${ccd}" \
+				     --output=/dev/null --error=/dev/null \
+				     --partition=nocona \
+				     --account=${ACCOUNT} \
+				     --nodes 1 --cpus-per-task 1 \
+				     --ntasks-per-node=1\
+				     tar -czf kernel_data.tgz {kt_,kc_}*fits &
+			    }
 			fi
 		    fi
 		    cd ..
 		done
 		wait
+
+		#clean up kernel files
+		for slice in $(ls -d slilce*); do
+		    cd "$slice"
+		    rm kt_*fits kc_*fits
+		    cd ..
+		done
+		
 		cd ../../
 	    done
 	done
@@ -75,19 +95,39 @@ function run_bkg_phot(){
 		    n=$(wc ../../phot.data | awk '{print $1}')
 		
 		    if [ $n -gt "0" ]; then
-			if [ -e dates ]; then 
+			if [ -e dates ]; then
+			    [[ -e kernel_data.tgz ]] && { tar -xzf kernel_data.tgz; }
 			    srun --job-name="bkg_phot2_cam${cam}-ccd${ccd}" \
-                                 --output=%x.o%j --error=%x.e%j \
+                                 --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
                                  --partition=nocona \
 				 --account=${ACCOUNT} \
                                  --nodes 1 --cpus-per-task 1 \
                                  --ntasks-per-node=1\
 				 ${ISIS_DIR}/phot2.csh &
+
+			    [[ -e 'kernel_data.tgz' ]] || {
+				srun --job-name="phot2_cam${cam}-ccd${ccd}" \
+                                     --output=/dev/null --error=/dev/null \
+                                     --partition=nocona \
+                                     --account=${ACCOUNT} \
+                                     --nodes 1 --cpus-per-task 1 \
+                                     --ntasks-per-node=1\
+                                     tar -czf kernel_data.tgz {kt_,kc_}*fits &
+			    }
+			    
 			fi
 		    fi
 		    cd ../../
 		done
 		wait
+
+		#clean up kernel files
+		for slice in $(ls -d slilce*); do
+		    cd "$slice"/bkg_phot
+		    rm kt_*fits kc_*fits
+		    cd ../../
+		done
+		
 		cd ../../
 	    done
 	done
@@ -211,7 +251,7 @@ for sector in  87 88 89 90 91 92; do
     ##lc discovery
 
     srun --job-name="catalog2tess_pix_transient_phot_s$sector" \
-         --output=%x.o%j --error=%x.e%j \
+         --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
          --partition=nocona \
          --account=${ACCOUNT} \
          --nodes 1 --cpus-per-task 1 \
