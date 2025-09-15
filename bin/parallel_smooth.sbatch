@@ -1,0 +1,1 @@
+../setup/parallel_smooth.sbatch

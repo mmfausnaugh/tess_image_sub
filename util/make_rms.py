@@ -13,10 +13,15 @@ def make_file_dict():
     fins = {}
     for dates in dates_list:
         files = np.genfromtxt(dates, usecols=(0), dtype=str)
-        for f in files:
-            fin = int(f.split('-')[2]) 
-            fins[fin] = dates.split('/')[0]
-
+        try:
+            for f in files:
+                fin = int(f.split('-')[2]) 
+                fins[fin] = dates.split('/')[0]
+        except TypeError:
+            for f in files.reshape(1):
+                fin = int(f.split('-')[2]) 
+                fins[fin] = dates.split('/')[0]
+            
     return fins
 
         

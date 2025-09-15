@@ -23,9 +23,11 @@ if [[ $o == 'o1a' ]]; then
 	 --nodes 1 --cpus-per-task 1 \
 	 --ntasks-per-node=1 \
 	 ${PIPELINE_DIR}/setup/ccd_match_script_em2
-
+	
+    echo "Works fine till here"
 
 fi
+
 
 #link at the segment level directory (o1a, o1b, o2a, or o2b)
 link_prf_nums_em2 $o

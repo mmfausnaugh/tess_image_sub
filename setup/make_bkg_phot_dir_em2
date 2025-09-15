@@ -11,5 +11,5 @@ cp ../psf_table .
 cp ../dates .
 #clever way to replace the last instance of / on a given line
 #cat ../process_config | rev | sed 's@/@/tohp_gkb/@' | rev | sed 's@isis/bkg_phot@isis@' > process_config
-cat ../process_config | rev | sed 's@/@/tohp_gkb/@' | rev | sed 's@isis/bkg_phot@isis@' | sed 's@bkg_phot/\sWhere@  Where@' | sed 's@bkg_phot/phot.data@phot.data@' > process_config
-mkdir lc
+{ cat ../process_config | rev | sed 's@/@/tohp_gkb/@' | rev | sed 's@isis/bkg_phot@isis@' | sed 's@bkg_phot/\sWhere@  Where@' | sed 's@bkg_phot/phot.data@phot.data@' > process_config ; } || echo "failed to overwrite, continuing anyway"
+{ mkdir lc ; } || echo "failed to create directory continuing anyway"

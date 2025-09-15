@@ -21,7 +21,9 @@ export ISIS_PATH=/lustre/research/mfausnau/software/isis/bin
 export PYTHONPATH=/lustre/research/mfausnau/software/
 export PATH="$PIPELINE_PATH:$ISIS_PATH:$WCSTOOLS_PATH:$PATH"
 
-export LOG_DIR=/lustre/scratch/mfausnau/logs
+#export LOG_DIR=/lustre/scratch/rethiraj/logs
+export LOG_DIR=/lustre/research/mfausnau/logs
+#export LOG_DIR=./
 
 export NCORES=512
 
