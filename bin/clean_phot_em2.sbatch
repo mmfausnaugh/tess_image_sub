@@ -1,0 +1,1 @@
+../phot_scripts/clean_phot_em2.sbatch

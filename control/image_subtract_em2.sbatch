@@ -9,7 +9,7 @@
 #SBATCH --nodes 1
 #SBATCH --cpus-per-task 1 
 #SBATCH --ntasks-per-node=1
-#SBATCH --array=1-500
+#SBATCH --array=0-499
 
 set -eo
 segment=$1
@@ -19,7 +19,7 @@ sector=$(pwd | awk -F/ '{print $7}')
 folders=($(ls -d cam?-ccd?/"$segment"/slice*))
 nelements=${#folders[@]}
 echo $nelements 
-echo "SLURM_ARRAY_TASK_ID" $SLURM_ARRAY_TASK_ID
+#echo "SLURM_ARRAY_TASK_ID" $SLURM_ARRAY_TASK_ID
 for (( ii=1; ii<=$nelements; ii++ )); do
     if [[ $((ii%500)) -eq $SLURM_ARRAY_TASK_ID ]]; then
 

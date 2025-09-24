@@ -36,7 +36,6 @@ function do_phot(){
 	    srun --job-name="phot2_cam${cam}-ccd${ccd}" \
                  --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
                  --partition=nocona \
-		 --account=${ACCOUNT} \
                  --nodes 1 --cpus-per-task 1 \
                  --ntasks-per-node=1\
                  ${ISIS_DIR}/phot2.csh &
@@ -45,7 +44,6 @@ function do_phot(){
 		srun --job-name="phot2_cam${cam}-ccd${ccd}" \
 		     --output=/dev/null --error=/dev/null \
 		     --partition=nocona \
-		     --account=${ACCOUNT} \
 		     --nodes 1 --cpus-per-task 1 \
 		     --ntasks-per-node=1\
 		     tar -czf kernel_data.tgz {kt_,kc_}*fits &
@@ -80,7 +78,6 @@ function do_phot(){
 	    srun --job-name="bkg_phot2_cam${cam}-ccd${ccd}" \
                  --output=${LOG_DIR}/%x.o%j --error=${LOG_DIR}/%x.e%j \
                  --partition=nocona \
-		 --account=${ACCOUNT} \
                  --nodes 1 --cpus-per-task 1 \
                  --ntasks-per-node=1\
                  ${ISIS_DIR}/phot2.csh &
@@ -89,7 +86,6 @@ function do_phot(){
                 srun --job-name="phot2_cam${cam}-ccd${ccd}" \
                      --output=/dev/null --error=/dev/null \
                      --partition=nocona \
-                     --account=${ACCOUNT} \
                      --nodes 1 --cpus-per-task 1 \
                      --ntasks-per-node=1\
                      tar -czf kernel_data.tgz {kt_,kc_}*fits &

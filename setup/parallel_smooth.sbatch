@@ -9,7 +9,7 @@
 #SBATCH --nodes 1
 #SBATCH --cpus-per-task 1
 #SBATCH --ntasks-per-node=1
-#SBATCH --array=1-500
+#SBATCH --array=0-499
 
 #
 set -eo

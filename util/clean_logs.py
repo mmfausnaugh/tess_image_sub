@@ -1,7 +1,12 @@
+#!/home/mfausnau/conda/envs/py312/bin/python3.12
+
 import numpy as np
 import glob
 import os
 import re
+from datetime import datetime
+
+
 
 logdir=os.environ['LOG_DIR']
 logfiles_outputs = np.sort(glob.glob(
@@ -11,6 +16,10 @@ logfiles_outputs = np.sort(glob.glob(
 logfiles_errors = np.sort(glob.glob(
     os.path.join(logdir,'*.e*_*')
 ))
+
+with open(os.path.join(logdir, datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.logrun'),'w') as fout:
+    fout.write('ran script')
+
 
 #do the output logs
 job_IDs = [ ]
@@ -29,7 +38,8 @@ for job_ID in np.unique(job_IDs):
 
     assert all( names[matches] == names[matches][0] )
     #print(names[matches])
-    with open('{}.o{}'.format(names[matches][0], job_ID), 'w' ) as fout:
+    with open(os.path.join(logdir,'{}.o{}'.format(names[matches][0], job_ID)),
+                           'w' ) as fout:
         for ii in np.where(matches == 1)[0]:
             with open(logfiles_outputs[ii], 'r') as fin:
                 fout.write('Contents of {}:  \n'.format(logfiles_outputs[ii]))
@@ -59,7 +69,8 @@ for job_ID in np.unique(job_IDs):
 
     assert all( names[matches] == names[matches][0] )
     #print(names[matches])
-    with open('{}.e{}'.format(names[matches][0], job_ID), 'w' ) as fout:
+    with open( os.path.join(logdir, '{}.e{}'.format(names[matches][0], job_ID)),
+               'a' ) as fout:
         for ii in np.where(matches == 1)[0]:
             with open(logfiles_errors[ii], 'r') as fin:
                 fout.write('Contents of {}:  \n'.format(logfiles_errors[ii]))
