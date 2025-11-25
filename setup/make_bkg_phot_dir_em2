@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 #in the em, the kc*fits list is too long for ls
-find .. -name "kc*fits" -exec ln -s {} \;
+find .. -name "kc*fits" -exec cp {} . \;
 #for i in $(ls ../kc*fits); do ln -s  $i ${i:3}; done
-for i in $(ls ../kt*fits); do ln -s  $i ${i:3}; done
+for i in $(ls ../kt*fits); do cp  $i . ; done
 for i in $(ls ../psf*fits); do ln -s  $i ${i:3}; done
 for i in $(ls ../interp_*fits); do ln -s  $i ${i:3}; done
 for i in $(ls ../bkg_*fits); do ln -s  $i conv_${i:7}; done

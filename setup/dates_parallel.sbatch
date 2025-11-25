@@ -40,6 +40,7 @@ if [[ $o == 'o1a' ]]; then
 fi
 sleep 3
 
+echo $o
 #link at the segment level directory (o1a, o1b, o2a, or o2b)
 if [[ ${SLURM_ARRAY_TASK_ID} -eq 1 ]]; then
     link_prf_nums_em2 $o

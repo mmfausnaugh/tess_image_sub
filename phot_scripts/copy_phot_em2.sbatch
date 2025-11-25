@@ -10,7 +10,7 @@
 #SBATCH --nodes 1
 #SBATCH --cpus-per-task 1
 #SBATCH --ntasks-per-node=1
-#SBATCH --array=1-500
+#SBATCH --array=0-99
 #SBATCH --time=90
 
 set -eo
@@ -33,14 +33,19 @@ nelements=${#folders[@]}
 
 for (( ii=1; ii<=$nelements; ii++ )); do
     if [[ $SLURM_ARRAY_TASK_ID -eq 1 ]]; then
-	[[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/lc" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/lc" ; }
-	[[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot" ; }
-	[[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc" ; }
+	if [[ $ii -eq 1 ]]; then
+	    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/lc" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/lc" ; }
+	    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot" ; }
+	    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc" ; }
 
+	fi
     fi
-    sleep 3
+    #try to make sure phot.data is copied
+    if [[ $ii -lt 101 ]]; then
+        sleep 1
+    fi
     
-    if [[ $((ii%500)) -eq $SLURM_ARRAY_TASK_ID ]]; then
+    if [[ $((ii%100)) -eq $SLURM_ARRAY_TASK_ID ]]; then
 	
 	cd ${folders[$((ii-1))]}
 	cd lc

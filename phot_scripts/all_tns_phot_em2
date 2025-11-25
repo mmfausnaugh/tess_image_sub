@@ -30,6 +30,7 @@ function run_phot(){
 		    if [ $n -gt "0" ] ; then
 			if [ -e dates ]; then
 
+			    [[ -e images.tar ]] && { tar -xf images.tar ; }
 			    [[ -e kernel_data.tgz ]] && { tar -xzf kernel_data.tgz; }
 			    
 			    srun --job-name="phot2_cam${cam}-ccd${ccd}" \
@@ -57,7 +58,9 @@ function run_phot(){
 		#clean up kernel files
 		for slice in $(ls -d slilce*); do
 		    cd "$slice"
-		    rm kt_*fits kc_*fits
+		    rm kt_*fits
+		    rm kc_*fits
+		    rm {interp,conv,bkg}*fits
 		    cd ..
 		done
 		

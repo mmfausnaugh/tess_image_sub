@@ -9,7 +9,7 @@
 #SBATCH --nodes 1
 #SBATCH --cpus-per-task 1
 #SBATCH --ntasks-per-node=1
-#SBATCH --array=0-499
+#SBATCH --array=0-99
 
 #
 set -eo
@@ -23,7 +23,7 @@ o=$1
 folders=($(ls -d cam?-ccd?/"$o"/slice*))
 nelements=${#folders[@]}
 for (( ii=1; ii<=$nelements; ii++)); do
-    if [[ $((ii%500)) -eq ${SLURM_ARRAY_TASK_ID} ]]; then
+    if [[ $((ii%100)) -eq ${SLURM_ARRAY_TASK_ID} ]]; then
 	cd ${folders[$((ii-1))]}
 	echo "running quick_smooth "${folders[$((ii-1))]}
 	${PIPELINE_DIR}/util/quick_smooth.py 

@@ -9,7 +9,7 @@
 #SBATCH --nodes 1
 #SBATCH --cpus-per-task 1 
 #SBATCH --ntasks-per-node=1
-#SBATCH --array=0-499
+#SBATCH --array=0-599
 
 set -eo
 segment=$1
@@ -21,11 +21,11 @@ nelements=${#folders[@]}
 echo $nelements 
 #echo "SLURM_ARRAY_TASK_ID" $SLURM_ARRAY_TASK_ID
 for (( ii=1; ii<=$nelements; ii++ )); do
-    if [[ $((ii%500)) -eq $SLURM_ARRAY_TASK_ID ]]; then
+    if [[ $((ii%600)) -eq $SLURM_ARRAY_TASK_ID ]]; then
 
-	echo $ii 
+	echo $ii ${folders[$((ii-1))]}
 	cd ${folders[$((ii-1))]} 
-	pwd 2>&1 
+	pwd 
 	${ISIS_DIR}/subtract.csh 
 	${PIPELINE_DIR}/util/correct_straps.py 
 	${PIPELINE_DIR}/util/median_filter_diff_row_col.py 

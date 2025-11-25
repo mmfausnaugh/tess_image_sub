@@ -29,5 +29,5 @@ done
 
 wait
 
-mv clean_lc.o* $LOG_DIR
-mv clean_lc.3* $LOG_DIR
+#mv clean_lc.o* $LOG_DIR
+#mv clean_lc.e* $LOG_DIR

@@ -80,6 +80,7 @@ def delete_data(indir):
         ))
     infiles.sort()
     for infile in infiles:
+
         os.remove(infile)
 
     infiles = glob.glob( os.path.join(
@@ -106,8 +107,16 @@ for lc in results[0].keys():
     output_bkg = []
     
     for ii,r in enumerate(results):
-        output.append( r[lc] )
-        output_bkg.append( results_bkg[ii][lc] )
+        #print(ii,r)
+        try:
+            print(indirs[ii], lc)
+            output.append( r[lc] )
+            output_bkg.append( results_bkg[ii][lc] )
+        except KeyError:
+            print('error!',indirs[ii], lc)
+            #print(os.getcwd())
+            #print(lc)
+            raise
 
     output = np.vstack(output)
     output_bkg = np.vstack(output_bkg)
@@ -127,6 +136,7 @@ for lc in results[0].keys():
                                "lc",
                                os.path.basename(lc)
     )
+
     np.savetxt(output_file, output)
 
     output_file2 = os.path.join(dhome,
@@ -139,7 +149,7 @@ for lc in results[0].keys():
     np.savetxt(output_file2, output_bkg)
 
     
-for indir in indirs:
+##for indir in indirs:
     #print(indir)
-    delete_data(indir)
+##    delete_data(indir)
     
