@@ -13,7 +13,7 @@
 #SBATCH --array=0-99
 #SBATCH --time=0-0:30:00
 
-set -eo
+set -o
 
 duse=$DATA_DIR
 dhome=$(pwd);
@@ -24,7 +24,7 @@ echo "sector use:" $sectoruse
 cam=$2
 ccd=$3
 o=$4
-
+lcdir=$5
 
 folders=($(ls -d "$duse"/"$sectoruse"/cam$2-ccd$3/"$o"/slice*))
 nelements=${#folders[@]}
@@ -51,14 +51,29 @@ for (( ii=1; ii<=$nelements; ii++ )); do
         done
 	[[ -e psf_table ]] || { ln -s ../psf_table ; }
 	    
-	if [ ! -d lc ]; then
-	    mkdir lc
+	if [ ! -d $lcdir ]; then
+	    mkdir $lcdir
 	fi
 
-	#try to make sure phot.data is copied
-	if [[ $ii -lt 101 ]]; then
-	    sleep 1
-	fi
+	#make sure phot.data is copied
+	flag=0
+	count=0
+	while [[ $flag -eq 0 ]]; do
+	    pwd
+	    if [[ -e "../phot.data" ]]; then
+		flag=1
+	    else
+		echo "sleeping...." $flag $count
+		sleep 1
+		let count=$(($count+1))
+	    fi
+
+	    if [[ $count -eq 1000 ]]; then
+		echo "waiting for 16.6 seconds, no phot.data. exiting..."
+		exit 1
+	    fi
+	done
+	
 
 	[[ -e images.tar ]] && { tar -xf images.tar ; }
 	[[ -e kernel_data.tgz ]] && { tar -xzf kernel_data.tgz; }	   
@@ -86,8 +101,8 @@ for (( ii=1; ii<=$nelements; ii++ )); do
         cd bkg_phot
 
 
-	if [ ! -d lc ]; then
-	    mkdir lc
+	if [ ! -d $lcdir ]; then
+	    mkdir $lcdir
 	fi
 	
 	[[ -e kernel_data.tgz ]] && { tar -xzf kernel_data.tgz; }

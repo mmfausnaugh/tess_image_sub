@@ -73,4 +73,4 @@ for ii,im in enumerate(np.nditer(imlist)):
 
 
 
-    fits.writeto('bkg_' + str(im), bkg + bkg2)
+    fits.writeto('bkg_' + str(im), bkg + bkg2, overwrite=True)

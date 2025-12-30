@@ -6,6 +6,8 @@ import os
 import re
 import sys
 import glob
+import shutil
+
 
 def make_file_dict():
     dates_list = glob.glob('slice*/dates')
@@ -47,7 +49,16 @@ def make_rms(inlist ):
             fin = int(infile.split('-')[2])
             slice_use = lookup_dict[fin]
 
+            #untar images
+            shutil.unpack_archive(os.path.join(slice_use, 'images.tar') )
             d = fits.open( os.path.join(slice_use, 'conv_' + infile)  )[0].data
+            #delete images
+            for prefix in ['interp_', 'conv_', 'bkg_']:
+                flist1 = glob.glob( os.path.join(slice_use, prefix + '*fits'))
+                for fl in flist1:
+                    os.remove(fl)
+
+            
         else:
             d = fits.open( infile )[0].data
         avg += d
