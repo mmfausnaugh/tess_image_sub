@@ -49,8 +49,11 @@ def make_rms(inlist ):
             fin = int(infile.split('-')[2])
             slice_use = lookup_dict[fin]
 
+            print(os.getcwd(), slice_use)
             #untar images
-            shutil.unpack_archive(os.path.join(slice_use, 'images.tar') )
+            #important to give the destination directory, or all the images land in the wrong place
+            evt = shutil.unpack_archive(os.path.join(slice_use, 'images.tar'),
+                                        slice_use,)
             d = fits.open( os.path.join(slice_use, 'conv_' + infile)  )[0].data
             #delete images
             for prefix in ['interp_', 'conv_', 'bkg_']:
