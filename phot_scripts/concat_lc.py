@@ -15,8 +15,11 @@ def get_inputs(args):
     parser.add_argument('--cam')
     parser.add_argument('--ccd')
     parser.add_argument('--lcdir')
+    parser.add_argument('--override',action='store_true',help="By defaul, script exits if there is no data in the first"
+                        "slice, because this looks like a pipeline error. But, over ride this behavior (run any way)"
+                        " if there really isn't any data in the first slice. For example, form scattered light.")
     
-    parser.add_argument('--delete', action='store_true')
+    parser.add_argument('--delete', action='store_true', help="Delete light curves from the slice directories. Important for saving inodes.")
 
     return parser.parse_args()
     
@@ -127,9 +130,14 @@ if __name__ == '__main__':
 
         
     if bool(results[0]) == False:
-        print('Error found---first director (o1a/slice0000) is empty')
-        sys.exit()
-    
+        #over ride option if there really shouldn't be data in the first slice,
+        #for example scattered light.  This happened is s87, cam1, ccd3, o1a.
+        if args.override==False:
+            print('Error found---first director (o1a/slice0000) is empty')
+            sys.exit()
+
+
+    #what to do for override here?
     for lc in results[0].keys():
         print(lc)
         output = []

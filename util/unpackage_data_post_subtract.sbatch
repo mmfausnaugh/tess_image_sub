@@ -37,15 +37,15 @@ for (( ii=1; ii<=$nelements; ii++ )); do
         pwd
 
 
-	[[ -e images.tar ]] && { tar -xf images.tar  {interp,conv,bkg}*fits ; }
+	[[ -e images.tar ]] && { tar -xf images.tar   ; }
         [[ -e 'kernel_data.tgz' ]] && {
-            tar -xzf kernel_data.tgz {kt_,kc_}*fits
+            tar -xzf kernel_data.tgz 
         }
 	
 	cd bkg_phot
 	
         [[ -e 'kernel_data.tgz' ]] && {
-            tar -xzf kernel_data.tgz {kt_,kc_}*fits
+            tar -xzf kernel_data.tgz 
         }
 		
 

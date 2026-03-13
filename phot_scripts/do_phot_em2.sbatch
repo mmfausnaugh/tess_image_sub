@@ -84,7 +84,6 @@ for (( ii=1; ii<=$nelements; ii++ )); do
 	    fi
 	done
 	
-
 	[[ -e images.tar ]] && { tar -xf images.tar ; }
 	[[ -e kernel_data.tgz ]] && { tar -xzf kernel_data.tgz; }	   
 

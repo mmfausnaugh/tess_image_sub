@@ -6,12 +6,14 @@
 #SBATCH --error=%x.e%j
 #SBATCH --partition=nocona
 #SBATCH --nodes 1
-#SBATCH --cpus-per-task 2
-#SBATCH --ntasks=16
-#SBATCH --account=mfausnau_grp
+#SBATCH --cpus-per-task 1
 #SBATCH --ntasks=1
 
-${PIPELINE_DIR}/util/rms_analysis.py  lc/lc_*cleaned
+indir=$1
+cd $indir
+ln -s ../phot.data
+cd ..
+${PIPELINE_DIR}/util/rms_analysis.py  "$indir"/lc_*cleaned
 
-mv rms_analysis.o* $LOG_DIR
-mv rms_analysis.e* $LOG_DIR
+#mv rms_analysis.o* $LOG_DIR
+#mv rms_analysis.e* $LOG_DIR

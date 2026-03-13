@@ -26,7 +26,7 @@ def get_meta_data(ifile,metafile,decimal=False):
         sector_search = re.search('s(\d\d\d\d)',wdir)
         sector = sector_search.group(1)
     except AttributeError:
-        sector_search = re.search('sector(\d\d)',wdir)
+        sector_search = re.search('sector(\d+)',wdir)
         sector = sector_search.group(1)
 
     #cam, ccd number
@@ -59,6 +59,7 @@ def get_meta_data(ifile,metafile,decimal=False):
             
 
 def get_fluxcal_faster( lc_names, fluxes, light_curve_name):
+    print(fluxes, type(fluxes))
     if fluxes.size == 1:
         fluxes = np.array([fluxes])
 
@@ -74,7 +75,9 @@ def get_fluxcal_faster( lc_names, fluxes, light_curve_name):
     #    
     #m= np.in1d(obj_list, object_use)
 
-    m = np.in1d(lc_names, light_curve_name.split('/',1) )
+
+    m = np.in1d(lc_names, light_curve_name.replace('//','/').split('/',1) )
+    print(lc_names, light_curve_name.split('/',1),m)
     print(fluxes[m])
     assert len(fluxes[m]) == 1
 

@@ -61,7 +61,8 @@ for (( ii=1; ii<=$nelements; ii++ )); do
 	cd bkg_phot
 	
         [[ -e 'kernel_data.tgz' ]] || {
-            tar -czf kernel_data.tgz {kt_,kc_}*fits
+            # tar -czf kernel_data.tgz {kt_,kc_}*fits
+	    cp ../kernel_data.tgz .
         }
 
 	#cp ../kernel_data.tgz .

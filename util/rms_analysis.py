@@ -16,6 +16,7 @@ import argparse
 sys.path.insert(0,os.getenv('PIPELINE_DIR'))
 from tess_time.cut_ffi.cut_data import cut_data
 
+
 def get_meta_data(ifile):
 #    wdir  =  os.path.abspath( os.path.dirname(ifile))
 
@@ -126,9 +127,11 @@ def get_inputs(args):
     
 def main():
     args = get_inputs(sys.argv[1:])
-
+    print(args.infiles)
     for ifile in args.infiles:
         #first load the file
+        outdir = os.path.dirname(ifile)
+        print(outdir)
         ifile = os.path.abspath(ifile)
         print(ifile)
         
@@ -167,7 +170,7 @@ def main():
         outfile = os.path.join('lc_{}_sector{}_cam{}_ccd{}.png'.format(obj,sector,
                                                                        cam,ccd))
         print(outfile)
-        if os.path.isfile(outfile):
+        if os.path.isfile( os.path.join( outdir, outfile) ):
             continue
 
 
@@ -179,19 +182,22 @@ def main():
 
 
         ref_image = fits.getdata(ref_file)
-        rms_image = fits.getdata(rms_file)
+        try:
+            rms_image = fits.getdata(rms_file)
+        except:
+            rms_image = np.zeros(np.shape(ref_image))
         #get coords, plot up ref and rms image
         phot_data = np.genfromtxt(phot_file, dtype=str)
         #phot_data = np.genfromtxt(ifile, dtype=str)
         print(phot_data, phot_data.ndim)
         if phot_data.ndim == 1:
-            names = phot_data[4].replace('lc/','') 
+            names = os.path.basename(phot_data[4])
         else:
-            names = np.array([lc.replace('lc/','') for lc in phot_data[:,4] ])
+            names = np.array([os.path.basename(lc) for lc in phot_data[:,4] ])
         #print(phot_file)
 
-        if os.path.isfile(outfile):
-            continue
+        #if os.path.isfile(outfile):
+        #    continue
         #fuse = os.path.join(dstem,
         #                    'lc_hyperleda/lc_{}_cleaned'.format(obj) )
         fuse = os.path.join(ifile)
@@ -270,11 +276,13 @@ def main():
 
         plt.subplots_adjust(hspace=0, wspace=0)
         F.set_size_inches(8,6)
-        plt.savefig(outfile)                
+        plt.savefig(os.path.join(outdir,outfile) )
                 
         plt.close()
-        fits.writeto('ref_{}.fits'.format(obj),ref_image[row_idx, col_idx])
-        fits.writeto('rms_{}.fits'.format(obj),rms_image[row_idx, col_idx])
+        fits.writeto(os.path.join(outdir,'ref_{}.fits'.format(obj)),
+                     ref_image[row_idx, col_idx])
+        fits.writeto(os.path.join(outdir,'rms_{}.fits'.format(obj)),
+                     rms_image[row_idx, col_idx])
 
 #            if args.show:
 #                plt.show()
