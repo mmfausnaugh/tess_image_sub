@@ -87,10 +87,9 @@ def do_fluxcal(im, photdata, plot=False,diagnostics = False):
                 rmax = 2047
 
             
-
             p = PixelStamp(im[rmin:rmax + 1,
                               cmin:cmax + 1])
-            
+             
             _a, _b, bkg = p.estimate_bkg(p.image[bkg_aperture])
             cts  = p.fit_scene(col_center - trunc_col_center + (cmax - cmin)//2,
                                row_center - trunc_row_center + (rmax - rmin)//2,

@@ -20,6 +20,7 @@ from multiprocessing import Pool
 
 def get_meta_data(ifile,metafile,decimal=False):
     wdir  =  os.path.abspath( os.path.dirname(ifile))
+    print(wdir, ifile, metafile)
 
     #sector number
     try:
@@ -38,12 +39,12 @@ def get_meta_data(ifile,metafile,decimal=False):
     print('infile',ifile)
     print('sector,cam,ccd',sector,cam,ccd)
 
-
     if decimal:
+        print('decimal flag passed')
         cat = AsciiCol(metafile, sector, int(cam),sexagesimal=False,ignore_image_buffer=True)
     else:
+        print('decimal flag NOT passed')
         cat = AsciiCol(metafile, sector, int(cam),sexagesimal=True,ignore_image_buffer=True)
-    
 
     obj_search =re.search('lc_(.*)',os.path.basename(ifile))
     obj = obj_search.group(1)
@@ -53,13 +54,14 @@ def get_meta_data(ifile,metafile,decimal=False):
     print(obj)
     m = np.in1d(cat.obj_name, obj)
     print(any(m))
+    print(cat.obj_name)
     return {'RA':float(cat.ra[m][0]), 
             'DEC':float(cat.dec[m][0])
     }
             
 
 def get_fluxcal_faster( lc_names, fluxes, light_curve_name):
-    print(fluxes, type(fluxes))
+    print("------------->",fluxes, type(fluxes))
     if fluxes.size == 1:
         fluxes = np.array([fluxes])
 
@@ -233,13 +235,25 @@ def get_inputs(args):
     parser = argparse.ArgumentParser( description="Specify TNS light curves to plot---will look up the source in the catalogs and display metadata.")
     parser.add_argument('infiles', nargs='+')
     parser.add_argument('--metafile', help = 'file with ra dec, etc')
-    parser.add_argument('--decimal',action='store_true',help='If set, metafile is assumed to have decimal coordinates')
+#     parser.add_argument('--decimal',action='store_true',help='If set, metafile is assumed to have decimal coordinates')
     parser.add_argument('--multisector',action='store_true',help='If set, assumes light curves over sevral sectors and removes all time ranges saturated in cam4')
     parser.add_argument('--fluxcal', default=None, help='Set to name of file with fluxcalibration.  Expects to find light curve names identical to what is in phot.data')
     return parser.parse_args()
     
 def main():
     args = get_inputs(sys.argv[1:])
+    tmpra = np.genfromtxt(args.metafile,usecols=(1),dtype=str)
+    if tmpra.size==1:
+        if ":" in str(tmpra):
+            decimal = False
+        else:
+            decimal = True
+    else:
+        if ":" in str(tmpra[0]):
+            decimal = False
+        else:
+            decimal = True
+
     if args.multisector:
         obj_name = np.genfromtxt(args.metafile,usecols=(0),dtype=str)
         ra,dec = np.genfromtxt(args.metafile,usecols=(1,2),unpack=1)
@@ -251,7 +265,7 @@ def main():
         lc_names = np.genfromtxt(args.fluxcal,  usecols=(0),dtype=str)
         fluxes   = np.genfromtxt(args.fluxcal,  usecols=(1) )
 
-    metadata = get_meta_data(args.infiles[0], args.metafile,decimal=args.decimal)
+    metadata = get_meta_data(args.infiles[0], args.metafile,decimal=decimal)
 
     for ifile in args.infiles:
         print(ifile)
@@ -264,7 +278,7 @@ def main():
             continue
 
         #if not args.multisector:
-        #    metadata = get_meta_data(ifile, args.metafile,decimal=args.decimal)
+        #    metadata = get_meta_data(ifile, args.metafile,decimal=decimal)
         #else:
         #
         #
