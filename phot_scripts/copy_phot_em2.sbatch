@@ -24,6 +24,7 @@ echo "sector use:"  $sectoruse
 cam=$2
 ccd=$3
 o=$4
+lcdir=$5
 
 dtarget=$DATA_DIR"/$sectoruse""/cam$2""-ccd$3"
 
@@ -34,9 +35,9 @@ nelements=${#folders[@]}
 for (( ii=1; ii<=$nelements; ii++ )); do
     if [[ $SLURM_ARRAY_TASK_ID -eq 1 ]]; then
 	if [[ $ii -eq 1 ]]; then
-	    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/lc" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/lc" ; }
+	    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/$5" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/$5" ; }
 	    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot" ; }
-	    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc" ; }
+	    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/$5" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/$5" ; }
 
 	fi
     fi
@@ -48,18 +49,18 @@ for (( ii=1; ii<=$nelements; ii++ )); do
     if [[ $((ii%100)) -eq $SLURM_ARRAY_TASK_ID ]]; then
 	
 	cd ${folders[$((ii-1))]}
-	cd lc
+	cd $lcdir
 	echo "current directory"
 	pwd
 
 	
 	for f in $(ls lc_*); do
-	    cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/lc/$f" 
+	    cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/$5/$f" 
 	done
 
-	cd ../bkg_phot/lc
+	cd ../bkg_phot/$5
         for f in $(ls lc_*); do
-            cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc/$f" 
+            cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/$5/$f" 
             #cat $f >> "$dtarget""/bkg_phot/lc/$f" &
         done
 	

@@ -23,13 +23,13 @@ sectoruse=$(printf "s%04d" $1)
 echo "sector use:"  $sectoruse
 cam=$2
 ccd=$3
+lcdir=$4
 #not needed here, check against all orbit segments
 #o=$4
-
 dtarget=$DATA_DIR"/$sectoruse""/cam$2""-ccd$3"
 
 
-infiles=( $(ls "$dhome""/sector$1""/cam$2""_ccd$3"/lc/lc_* | grep -v *png | grep -v *cleaned | awk -F"/" '{print $NF}' )) 
+infiles=( $(ls "$dhome""/sector$1""/cam$2""_ccd$3"/$4/lc_* | grep -v *png | grep -v *cleaned | awk -F"/" '{print $NF}' )) 
 nelements=${#infiles[@]}
 echo $nelements
 for (( ii=1; ii<=$nelements; ii++ )); do
@@ -41,14 +41,14 @@ for (( ii=1; ii<=$nelements; ii++ )); do
 	f=${infiles[$((ii-1))]}
 	echo $f  $ii  $SLURM_ARRAY_TASK_ID
 
-        sort -nuk1 "$dhome""/sector$1""/cam$2""_ccd$3""/lc"/$f > "$f"_tmp
-        mv "$f"_tmp "$dhome""/sector$1""/cam$2""_ccd$3""/lc"/$f
-        sort -nuk1 "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc"/$f > "$f"_tmp2
+        sort -nuk1 "$dhome""/sector$1""/cam$2""_ccd$3""/$4"/$f > "$f"_tmp
+        mv "$f"_tmp "$dhome""/sector$1""/cam$2""_ccd$3""/$4"/$f
+        sort -nuk1 "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/$4"/$f > "$f"_tmp2
         mv "$f"_tmp2 $f
 
 	
-	ncheck=$(wc "$dhome""/sector$1""/cam$2""_ccd$3""/lc"/$f | awk '{print $1}')
-	ncheck2=$(wc "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc/"$f | awk '{print $1}')
+	ncheck=$(wc "$dhome""/sector$1""/cam$2""_ccd$3""/$4"/$f | awk '{print $1}')
+	ncheck2=$(wc "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/$4/"$f | awk '{print $1}')
 	printf "%20s %20s\n" "N_lc_home"  "N_bkg_lc_home"
 	printf "%20s %20s\n" $ncheck $ncheck2
 
@@ -56,12 +56,12 @@ for (( ii=1; ii<=$nelements; ii++ )); do
 	#make sure that all lines in /data/tess/image_sub have been concated
 	nlines=0
 	cd "$dtarget"
-	for o in o1a o1b o2a o2b; do
+	for o in o??; do
 	    cd $o
 	    for slice in $(ls -d slice*); do
 		cd $slice
-		if [ -e "lc/$f" ]; then
-		    jj=$(wc "lc/$f" | awk '{print $1}')
+		if [ -e "$4/$f" ]; then
+		    jj=$(wc "$4/$f" | awk '{print $1}')
 		    let nlines=$(($nlines + $jj))
 		fi
 		cd ..
@@ -77,14 +77,14 @@ for (( ii=1; ii<=$nelements; ii++ )); do
 	    echo "equal background and lc data points"
 	    if [[ $ncheck == $nlines ]]; then
 		echo "$f passed, deleted from slice directories"
-		for o in o1a o1b o2a o2b; do 
+		for o in o??; do 
 		    cd $o
 		    for slice in $(ls -d slice*); do
 			cd $slice
-			rm lc/"$f"
+			rm $4/"$f"
 			if [ -d bkg_phot ]; then
 			    cd bkg_phot
-			    rm lc/"$f"
+			    rm $4/"$f"
 			    cd ../
 			fi
 			cd ../
