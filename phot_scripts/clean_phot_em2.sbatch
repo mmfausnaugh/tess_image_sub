@@ -43,16 +43,7 @@ if [[ $nelements -eq 0 ]]; then
     exit 1
 fi
 
-for (( ii=1; ii<=nelements; ii++ )); do
-    # Exit cleanly if this task id exceeds number of files
-    if [[ $SLURM_ARRAY_TASK_ID -gt $nelements ]]; then
-        exit 0
-    fi
-
-    if [[ $(( ii % n_tasks )) -ne $SLURM_ARRAY_TASK_ID ]]; then
-        continue
-    fi
-
+for (( ii=$SLURM_ARRAY_TASK_ID; ii<=$nelements; ii+=$n_tasks )); do
     f="${infiles[$((ii-1))]}"
     echo "Processing: $f  (ii=$ii  task=$SLURM_ARRAY_TASK_ID)"
 
