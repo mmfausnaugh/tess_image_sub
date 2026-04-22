@@ -33,14 +33,6 @@ if [[ $nelements -eq 0 ]]; then
     exit 1
 fi
 
-# --- One-time output directory setup: task 1, first slice only ---
-if [[ $SLURM_ARRAY_TASK_ID -eq 1 ]]; then
-    outbase="$dhome/sector${sector}/cam${cam}_ccd${ccd}"
-    mkdir -p "$outbase/$lcdir"
-    mkdir -p "$outbase/bkg_phot"
-    mkdir -p "$outbase/bkg_phot/$lcdir"
-fi
-
 for (( ii=1; ii<=nelements; ii++ )); do
     if [[ $(( ii % n_tasks )) -ne $SLURM_ARRAY_TASK_ID ]]; then
         continue

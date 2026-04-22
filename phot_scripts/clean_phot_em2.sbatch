@@ -79,13 +79,11 @@ for (( ii=$SLURM_ARRAY_TASK_ID; ii<=$nelements; ii+=$n_tasks )); do
 
     if [[ "$ncheck" -ne "$ncheck2" ]]; then
         echo "WARNING: $f — main ($ncheck) and bkg ($ncheck2) line counts differ. Skipping deletion."
-        cd "$dhome"
         continue
     fi
 
     if [[ "$ncheck" -ne "$nlines" ]]; then
         echo "WARNING: $f — aggregated ($ncheck) != sum of slices ($nlines). Skipping deletion."
-        cd "$dhome"
         continue
     fi
 
@@ -99,5 +97,6 @@ for (( ii=$SLURM_ARRAY_TASK_ID; ii<=$nelements; ii+=$n_tasks )); do
         done
     done
 
-    cd "$dhome"
 done
+
+echo "Task $SLURM_ARRAY_TASK_ID complete."

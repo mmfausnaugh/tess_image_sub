@@ -122,6 +122,10 @@ for phot_file in "${phot_files[@]}"; do
         echo "  Copying phot.data -> $phot_dst"
         cp "$phot_file" "$phot_dst"
 
+        # Create output directories before any copy_phot task runs
+        mkdir -p "$dhome/sector${sector}/cam${cam}_ccd${ccd}/$lcdir"
+        mkdir -p "$dhome/sector${sector}/cam${cam}_ccd${ccd}/bkg_phot/$lcdir"
+
         # Submit do_phot (reduced array, after cleanup_lc)
         do_job=$(sbatch \
             --parsable \
@@ -143,8 +147,8 @@ for phot_file in "${phot_files[@]}"; do
         echo "    copy_phot[$o] job ID: $copy_job"
 
         copy_job_ids+=("$copy_job")
-            all_do_phot_job_ids+=("$do_job")
-            all_copy_phot_job_ids+=("$copy_job")
+        all_do_phot_job_ids+=("$do_job")
+        all_copy_phot_job_ids+=("$copy_job")
     done
 
     # -- Submit clean_phot after all copy_phot for this cam-ccd --

@@ -87,12 +87,12 @@ echo "======================================================"
 
 # ---- Step 1: Interactive pre-flight cleanup (phot.data + aggregated lc dirs) ---
 echo ""
-echo "[1/4] Running interactive pre-flight cleanup (phot.data + aggregated lc dirs)..."
+echo "[1/5] Running interactive pre-flight cleanup (phot.data + aggregated lc dirs)..."
 bash "$script_dir/cleanup_phot.sh" "$sector" "$cam" "$ccd" "$lcdir"
 
 # ---- Step 2: Submit cleanup_lc (per-slice lc dir removal) -------------------
 echo ""
-echo "[2/4] Submitting cleanup_lc array job..."
+echo "[2/5] Submitting cleanup_lc array job..."
 cleanup_lc_job=$(sbatch \
     --parsable \
     "$script_dir/cleanup_lc.sbatch" \
@@ -101,7 +101,7 @@ echo "  cleanup_lc job ID: $cleanup_lc_job"
 
 # ---- Step 3: Submit do_phot + copy_phot for each orbit ----------------------
 echo ""
-echo "[3/4] Submitting do_phot -> copy_phot chains per orbit (after cleanup_lc)..."
+echo "[3/5] Submitting do_phot -> copy_phot chains per orbit (after cleanup_lc)..."
 
 copy_job_ids=()    # collect all copy_phot job IDs for the final dependency
 do_phot_job_ids=()  # collect all do_phot job IDs for error aggregation
@@ -128,6 +128,10 @@ for o in "${orbits[@]}"; do
     fi
     echo "  Copying phot.data -> $phot_dst"
     cp "$phot_src" "$phot_dst"
+
+    # Create output directories before any copy_phot task runs
+    mkdir -p "$dhome/sector${sector}/cam${cam}_ccd${ccd}/$lcdir"
+    mkdir -p "$dhome/sector${sector}/cam${cam}_ccd${ccd}/bkg_phot/$lcdir"
 
     # Submit do_phot, dependent on cleanup_lc completing successfully
     do_job=$(sbatch \
