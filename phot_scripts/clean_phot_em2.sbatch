@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --array=1-500%50
+#SBATCH --array=1-300%50
 #SBATCH --time=0-1:30:00
 
 set -eo pipefail
