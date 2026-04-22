@@ -1,136 +1,102 @@
 #!/usr/bin/env bash
-
-
-####issue one, need to fill in these variables
-### fix by removing environment variables....
 #SBATCH --job-name="do_phot"
-#SBATCH --output=//lustre/research/mfausnau/logs/%x.o%A_%a
+#SBATCH --output=/lustre/research/mfausnau/logs/%x.o%A_%a
 #SBATCH --error=/lustre/research/mfausnau/logs/%x.e%A_%a
 #SBATCH --partition=nocona
-#SBATCH --nodes 1
-#SBATCH --cpus-per-task 1
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --array=0-99
+#SBATCH --array=0-99%50
 #SBATCH --time=0-0:30:00
 
-set -o
+set -eo pipefail
+
+# Number of array tasks — used as modulo to distribute slices
+n_tasks=$(( SLURM_ARRAY_TASK_MAX + 1 ))
 
 duse=$DATA_DIR
-dhome=$(pwd);
-
+dhome=$(pwd)
 sector=$1
-sectoruse=$(printf "s%04d" $1)
-echo "sector use:" $sectoruse
+sectoruse=$(printf "s%04d" "$1")
 cam=$2
 ccd=$3
 o=$4
 lcdir=$5
 
-folders=($(ls -d "$duse"/"$sectoruse"/cam$2-ccd$3/"$o"/slice*))
+echo "sector use: $sectoruse  cam: $cam  ccd: $ccd  orbit: $o  lcdir: $lcdir"
+
+mapfile -t folders < <(ls -d "$duse/$sectoruse/cam${cam}-ccd${ccd}/$o/slice"*)
 nelements=${#folders[@]}
 
+if [[ $nelements -eq 0 ]]; then
+    echo "ERROR: No slice directories found under $duse/$sectoruse/cam${cam}-ccd${ccd}/$o/"
+    exit 1
+fi
 
+echo "Total slices: $nelements"
 
-for (( ii=1; ii<=$nelements; ii++ )); do
-
-    #modulos will be 1 to 99, 0  never 100
-    if [[ $((ii%100 )) -eq $SLURM_ARRAY_TASK_ID ]]; then
-
-	
-	if [[ $SLURM_ARRAY_TASK_ID -eq 1 ]]; then
-	    if [[ $ii -eq 1 ]]; then
-
-		#safety, in case there is an old phot.data
-		if [[ -e "$duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"/phot.data ]]; then
-		    echo "phot.data already present in $duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"".  You should delete this file before running do_phot_em2.sbatch; otherwise a race condition will lead to some processes running photometry on the old phot.data.  Exiting...";
-		    
-		    exit 1
-		fi
-
-		
-		echo "copying phot.data " $SLURM_ARRAY_TASK_ID
-		cp "sector$sector""/cam$cam""_ccd$ccd""/phot.data"   "$duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"
-	    fi
-	fi
-
-	cd ${folders[$((ii-1))]}
-	echo  "current working  directory:"
-	pwd
-	for p in $(ls ../psf_file*fits); do
-            [[ -e ${p:3:30} ]] || { ln -s $p ; }
-        done
-	[[ -e psf_table ]] || { ln -s ../psf_table ; }
-	    
-	if [ ! -d $lcdir ]; then
-	    mkdir $lcdir
-	fi
-
-	#make sure phot.data is copied
-	flag=0
-	count=0
-	while [[ $flag -eq 0 ]]; do
-	    pwd
-	    if [[ -e "../phot.data" ]]; then
-		flag=1
-	    else
-		echo "sleeping...." $flag $count
-		sleep 1
-		let count=$(($count+1))
-	    fi
-
-	    if [[ $count -eq 1000 ]]; then
-		echo "waiting for 16.6 seconds, no phot.data. exiting..."
-		exit 1
-	    fi
-	done
-	
-	[[ -e images.tar ]] && { tar -xf images.tar ; }
-	[[ -e kernel_data.tgz ]] && { tar -xzf kernel_data.tgz; }	   
-
-	if [ ! -d bkg_phot ]; then
-            mkdir bkg_phot
-            cd bkg_phot
-            bash $PIPELINE_DIR/setup/make_bkg_phot_dir_em2
-	    cd ..
-        fi
-
-	
-        ${ISIS_DIR}/phot2.csh 
-
-
-	[[ -e images.tar ]] || { tar -cf images.tar  {interp,conv,bkg}*fits ; }
-	[[ -e 'kernel_data.tgz' ]] || {
-	    tar -czf kernel_data.tgz {kt_,kc_}*fits 
-	}
-
-
-        rm kt_*fits ;
-        rm kc_*fits;
-
-        cd bkg_phot
-
-
-	if [ ! -d $lcdir ]; then
-	    mkdir $lcdir
-	fi
-	
-	[[ -e kernel_data.tgz ]] && { tar -xzf kernel_data.tgz; }
-
-        ${ISIS_DIR}/phot2.csh 
-	    
-	[[ -e 'kernel_data.tgz' ]] || {
-            tar -czf kernel_data.tgz {kt_,kc_}*fits 
-        }
-	
-	
-	rm kt_*fits
-	rm kc_*fits
-	cd ..
-	#clean up images after all photometry is done
-	rm {interp,conv,bkg}*fits
-		
+for (( ii=1; ii<=nelements; ii++ )); do
+    if [[ $(( ii % n_tasks )) -ne $SLURM_ARRAY_TASK_ID ]]; then
+        continue
     fi
-    
-    cd $dhome
-done
 
+    slice_dir="${folders[$((ii-1))]}"
+    cd "$slice_dir"
+    echo "Working in: $(pwd)"
+
+    # Symlink PSF files and table from parent
+    for p in ../psf_file*fits; do
+        [[ -e "${p:3}" ]] || ln -s "$p"
+    done
+    [[ -e psf_table ]] || ln -s ../psf_table
+
+    [[ -d "$lcdir" ]] || mkdir -p "$lcdir"
+
+    # Unpack archives if present
+    [[ -e images.tar      ]] && tar -xf  images.tar
+    [[ -e kernel_data.tgz ]] && tar -xzf kernel_data.tgz
+
+    # Set up bkg_phot dir
+    if [[ ! -d bkg_phot ]]; then
+        mkdir bkg_phot
+        cd bkg_phot
+        bash "$PIPELINE_DIR/setup/make_bkg_phot_dir_em2"
+        cd ..
+    fi
+
+    # Run photometry
+    "${ISIS_DIR}/phot2.csh"
+
+    # Check for output — phot2.csh may exit 0 even after a segfault
+    if ! compgen -G "$lcdir/lc_*" > /dev/null; then
+        echo "FAILED: no lc_* output in $slice_dir/$lcdir (phot2.csh likely segfaulted)" >&2
+        cd "$dhome"
+        continue
+    fi
+
+    # Repack images and kernel data; clean up loose fits
+    [[ -e images.tar      ]] || tar -cf  images.tar      {interp,conv,bkg}*fits
+    [[ -e kernel_data.tgz ]] || tar -czf kernel_data.tgz {kt_,kc_}*fits
+    rm -f kt_*fits kc_*fits
+
+    # bkg_phot photometry
+    cd bkg_phot
+    [[ -d "$lcdir" ]] || mkdir -p "$lcdir"
+    [[ -e kernel_data.tgz ]] && tar -xzf kernel_data.tgz
+    "${ISIS_DIR}/phot2.csh"
+
+    # Check for output
+    if ! compgen -G "$lcdir/lc_*" > /dev/null; then
+        echo "FAILED: no lc_* output in $slice_dir/bkg_phot/$lcdir (phot2.csh likely segfaulted)" >&2
+        cd "$dhome"
+        continue
+    fi
+    [[ -e kernel_data.tgz ]] || tar -czf kernel_data.tgz {kt_,kc_}*fits
+    rm -f kt_*fits kc_*fits
+    cd ..
+
+    # Final cleanup of unpacked images
+    rm -f {interp,conv,bkg}*fits
+
+    cd "$dhome"
+done

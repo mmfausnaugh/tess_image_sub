@@ -1,86 +1,73 @@
 #!/usr/bin/env bash
-
-
-####issue one, need to fill in these variables
-### fix by removing environment variables....
 #SBATCH --job-name="copy_phot"
-#SBATCH --output=//lustre/research/mfausnau/logs/%x.o%A_%a
-#SBATCH --error=/lustre/research/mfausnau/logs/%x.o%A_%a
+#SBATCH --output=/lustre/research/mfausnau/logs/%x.o%A_%a
+#SBATCH --error=/lustre/research/mfausnau/logs/%x.e%A_%a
 #SBATCH --partition=nocona
-#SBATCH --nodes 1
-#SBATCH --cpus-per-task 1
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --array=0-99
-#SBATCH --time=90
+#SBATCH --array=0-99%50
+#SBATCH --time=0-1:30:00
 
-set -eo
+set -eo pipefail
+
+# Number of array tasks — used as modulo to distribute slices
+n_tasks=$(( SLURM_ARRAY_TASK_MAX + 1 ))
 
 duse=$DATA_DIR
-dhome=$(pwd);
-
+dhome=$(pwd)
 sector=$1
-sectoruse=$(printf "s%04d" $1)
-echo "sector use:"  $sectoruse
+sectoruse=$(printf "s%04d" "$1")
 cam=$2
 ccd=$3
 o=$4
 lcdir=$5
 
-dtarget=$DATA_DIR"/$sectoruse""/cam$2""-ccd$3"
+echo "sector use: $sectoruse  cam: $cam  ccd: $ccd  orbit: $o  lcdir: $lcdir"
 
-
-folders=($(ls -d "$duse"/"$sectoruse"/cam$2-ccd$3/"$o"/slice*))
+mapfile -t folders < <(ls -d "$duse/$sectoruse/cam${cam}-ccd${ccd}/$o/slice"*)
 nelements=${#folders[@]}
 
-for (( ii=1; ii<=$nelements; ii++ )); do
-    if [[ $SLURM_ARRAY_TASK_ID -eq 1 ]]; then
-	if [[ $ii -eq 1 ]]; then
-	    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/$5" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/$5" ; }
-	    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot" ; }
-	    [[ -d "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/$5" ]] || { mkdir -p "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/$5" ; }
+if [[ $nelements -eq 0 ]]; then
+    echo "ERROR: No slice directories found."
+    exit 1
+fi
 
-	fi
+# --- One-time output directory setup: task 1, first slice only ---
+if [[ $SLURM_ARRAY_TASK_ID -eq 1 ]]; then
+    outbase="$dhome/sector${sector}/cam${cam}_ccd${ccd}"
+    mkdir -p "$outbase/$lcdir"
+    mkdir -p "$outbase/bkg_phot"
+    mkdir -p "$outbase/bkg_phot/$lcdir"
+fi
+
+for (( ii=1; ii<=nelements; ii++ )); do
+    if [[ $(( ii % n_tasks )) -ne $SLURM_ARRAY_TASK_ID ]]; then
+        continue
     fi
-    #try to make sure phot.data is copied
-    if [[ $ii -lt 101 ]]; then
-        sleep 1
-    fi
-    
-    if [[ $((ii%100)) -eq $SLURM_ARRAY_TASK_ID ]]; then
-	
-	cd ${folders[$((ii-1))]}
-	cd $lcdir
-	echo "current directory"
-	pwd
 
-	
-	for f in $(ls lc_*); do
-	    cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/$5/$f" 
-	done
+    slice_dir="${folders[$((ii-1))]}"
+    cd "$slice_dir/$lcdir"
+    echo "Copying lc files from: $(pwd)"
 
-	cd ../bkg_phot/$5
-        for f in $(ls lc_*); do
-            cat $f >> "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/$5/$f" 
-            #cat $f >> "$dtarget""/bkg_phot/lc/$f" &
+    if compgen -G "lc_*" > /dev/null; then
+        for f in lc_*; do
+            cat "$f" >> "$dhome/sector${sector}/cam${cam}_ccd${ccd}/$lcdir/$f"
         done
-	
+    else
+        echo "WARNING: No lc_* files found in $(pwd)"
     fi
-    
-    cd $dhome
-    
-    ##if [[ $SLURM_ARRAY_TASK_ID -eq $nelements ]]; then
-    ##	sleep 60
-    ##	cd lc
-    ##	for f in $(ls lc_* | grep -v cleaned | grep -v png); do
-    ##        sort -nuk1 $f > tmp
-    ##        mv tmp $f
-    ##	done
-    ##	cd ../bkg_phot/lc
-    ##	for f in $(ls lc_* | grep -v cleaned | grep -v png); do
-    ##        sort -nuk1 $f > tmp
-    ##        mv tmp $f
-    ##	done    
-    ##fi
+
+    cd "../bkg_phot/$lcdir"
+    echo "Copying bkg lc files from: $(pwd)"
+
+    if compgen -G "lc_*" > /dev/null; then
+        for f in lc_*; do
+            cat "$f" >> "$dhome/sector${sector}/cam${cam}_ccd${ccd}/bkg_phot/$lcdir/$f"
+        done
+    else
+        echo "WARNING: No lc_* files found in $(pwd)"
+    fi
+
+    cd "$dhome"
 done
-
-
