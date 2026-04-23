@@ -47,7 +47,7 @@ for (( ii=1; ii<=nelements; ii++ )); do
             cat "$f" >> "$dhome/sector${sector}/cam${cam}_ccd${ccd}/$lcdir/$f"
         done
     else
-        echo "WARNING: No lc_* files found in $(pwd)"
+        echo "WARNING: No lc_* files found in $(pwd)" >&2
     fi
 
     cd "../bkg_phot/$lcdir"
@@ -58,7 +58,7 @@ for (( ii=1; ii<=nelements; ii++ )); do
             cat "$f" >> "$dhome/sector${sector}/cam${cam}_ccd${ccd}/bkg_phot/$lcdir/$f"
         done
     else
-        echo "WARNING: No lc_* files found in $(pwd)"
+        echo "WARNING: No lc_* files found in $(pwd)" >&2
     fi
 
     cd "$dhome"
