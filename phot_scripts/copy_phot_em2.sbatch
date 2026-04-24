@@ -25,6 +25,11 @@ lcdir=$5
 
 echo "sector use: $sectoruse  cam: $cam  ccd: $ccd  orbit: $o  lcdir: $lcdir"
 
+# Create output directories before any copy_phot task runs
+mkdir -p "$dhome/sector${sector}/cam${cam}_ccd${ccd}/$lcdir"
+mkdir -p "$dhome/sector${sector}/cam${cam}_ccd${ccd}/bkg_phot/$lcdir"
+
+
 mapfile -t folders < <(ls -d "$duse/$sectoruse/cam${cam}-ccd${ccd}/$o/slice"*)
 nelements=${#folders[@]}
 

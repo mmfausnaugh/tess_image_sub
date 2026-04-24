@@ -122,9 +122,6 @@ for phot_file in "${phot_files[@]}"; do
         echo "  Copying phot.data -> $phot_dst"
         cp "$phot_file" "$phot_dst"
 
-        # Create output directories before any copy_phot task runs
-        mkdir -p "$dhome/sector${sector}/cam${cam}_ccd${ccd}/$lcdir"
-        mkdir -p "$dhome/sector${sector}/cam${cam}_ccd${ccd}/bkg_phot/$lcdir"
 
         # Submit do_phot (reduced array, after cleanup_lc)
         do_job=$(sbatch \

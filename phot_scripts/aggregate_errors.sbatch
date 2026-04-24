@@ -73,7 +73,7 @@ echo "Output: $outfile"
 
         for efile in "${efiles[@]}"; do
             # Extract FAILED lines from this task's log
-            mapfile -t failed_lines < <(grep "^FAILED:" "$efile" 2>/dev/null || true)
+            mapfile -t failed_lines < <(grep "^(FAILED|WARNING):" "$efile" 2>/dev/null || true)
 
             if [[ ${#failed_lines[@]} -eq 0 ]]; then
                 continue

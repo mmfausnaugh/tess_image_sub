@@ -65,7 +65,7 @@ for (( ii=1; ii<=nelements; ii++ )); do
     fi
 
     # Run photometry
-    "${ISIS_DIR}/phot2.csh"
+    "${ISIS_DIR}/phot2.csh" || true
 
     # Check for output — phot2.csh may exit 0 even after a segfault
     if ! compgen -G "$lcdir/lc_*" > /dev/null; then
@@ -83,7 +83,7 @@ for (( ii=1; ii<=nelements; ii++ )); do
     cd bkg_phot
     [[ -d "$lcdir" ]] || mkdir -p "$lcdir"
     [[ -e kernel_data.tgz ]] && tar -xzf kernel_data.tgz
-    "${ISIS_DIR}/phot2.csh"
+    "${ISIS_DIR}/phot2.csh" || true
 
     # Check for output
     if ! compgen -G "$lcdir/lc_*" > /dev/null; then
