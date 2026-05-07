@@ -10,7 +10,7 @@
 
 set -eo pipefail
 
-logdir="/lustre/research/mfausnau/logs"
+logdir="${LOG_DIR:-/lustre/research/mfausnau/logs}"
 dhome=$(pwd)
 
 # Arguments: <sector> <cam> <ccd> <lcdir> <do_phot_jobid1> [...] -- <copy_phot_jobid1> [...]
@@ -58,51 +58,43 @@ echo "Output: $outfile"
     echo ""
 
     total_failed=0
+    do_errors_found=0
 
     echo "--- do_phot failures ---"
     echo ""
 
     for jobid in "${do_phot_jobids[@]}"; do
-        # Find all error log files for this job ID
         mapfile -t efiles < <(ls "$logdir/do_phot.e${jobid}_"* 2>/dev/null || true)
 
         if [[ ${#efiles[@]} -eq 0 ]]; then
-            echo "WARNING: No error log files found for job $jobid"
+            echo "WARNING: No error log files found for do_phot job $jobid"
             continue
         fi
 
         for efile in "${efiles[@]}"; do
-            # Extract FAILED lines from this task's log
-            mapfile -t failed_lines < <(grep "^(FAILED|WARNING):" "$efile" 2>/dev/null || true)
-
-            if [[ ${#failed_lines[@]} -eq 0 ]]; then
-                continue
-            fi
+            [[ -s "$efile" ]] || continue
 
             task_id=$(basename "$efile" | grep -oP '(?<=_)\d+$')
-            echo "--- Job ${jobid}, task ${task_id} ---"
+            echo "--- do_phot job ${jobid}, task ${task_id} ---"
+            cat "$efile"
+            echo ""
+            (( do_errors_found++ )) || true
 
-            for line in "${failed_lines[@]}"; do
-                echo "  $line"
-
-                # Extract slice directory path from the FAILED line
-                # Format: FAILED: phot2.csh in <path> (exit N)
+            # For each phot2.csh failure, also print the dates file
+            while IFS= read -r line; do
                 slice_path=$(echo "$line" | grep -oP '(?<=in ).*(?= \(exit)')
-
-                # Strip /bkg_phot suffix if present to get the base slice dir
+                [[ -z "$slice_path" ]] && continue
                 base_slice="${slice_path%/bkg_phot}"
-
-                # Read the dates file if it exists
                 dates_file="$base_slice/dates"
                 if [[ -e "$dates_file" ]]; then
-                    echo "  Dates:"
+                    echo "  Dates for $base_slice:"
                     sed 's/^/    /' "$dates_file"
                 else
-                    echo "  Dates: (dates file not found in $base_slice)"
+                    echo "  (dates file not found in $base_slice)"
                 fi
                 echo ""
                 (( total_failed++ )) || true
-            done
+            done < <(grep "^FAILED" "$efile" 2>/dev/null || true)
         done
     done
 
@@ -138,6 +130,7 @@ echo "Output: $outfile"
     fi
 
     echo "========================================================"
+    echo " do_phot tasks with errors:    $do_errors_found"
     echo " Total failed phot2.csh calls: $total_failed"
     echo " copy_phot tasks with errors:  $copy_errors_found"
     echo "========================================================"

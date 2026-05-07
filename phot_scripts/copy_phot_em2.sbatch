@@ -44,7 +44,13 @@ for (( ii=1; ii<=nelements; ii++ )); do
     fi
 
     slice_dir="${folders[$((ii-1))]}"
-    cd "$slice_dir/$lcdir"
+    echo "Processing: $slice_dir" >&2
+
+    if ! cd "$slice_dir/$lcdir" 2>/dev/null; then
+        echo "ERROR: directory not found: $slice_dir/$lcdir" >&2
+        echo "  slice dir contents: $(ls "$slice_dir" 2>&1)" >&2
+        continue
+    fi
     echo "Copying lc files from: $(pwd)"
 
     if compgen -G "lc_*" > /dev/null; then
@@ -55,7 +61,12 @@ for (( ii=1; ii<=nelements; ii++ )); do
         echo "WARNING: No lc_* files found in $(pwd)" >&2
     fi
 
-    cd "../bkg_phot/$lcdir"
+    if ! cd "$slice_dir/bkg_phot/$lcdir" 2>/dev/null; then
+        echo "ERROR: directory not found: $slice_dir/bkg_phot/$lcdir" >&2
+        echo "  bkg_phot contents: $(ls "$slice_dir/bkg_phot" 2>&1)" >&2
+        cd "$dhome"
+        continue
+    fi
     echo "Copying bkg lc files from: $(pwd)"
 
     if compgen -G "lc_*" > /dev/null; then

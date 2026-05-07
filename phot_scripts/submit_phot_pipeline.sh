@@ -50,7 +50,7 @@ orbits=("$@")
 sectoruse=$(printf "s%04d" "$sector")
 dhome=$(pwd)
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-logdir="/lustre/research/mfausnau/logs"
+logdir="${LOG_DIR:-/lustre/research/mfausnau/logs}"
 
 # ---- Sanity checks -----------------------------------------------------------
 if [[ -z "${DATA_DIR:-}" ]]; then
@@ -95,6 +95,8 @@ echo ""
 echo "[2/5] Submitting cleanup_lc array job..."
 cleanup_lc_job=$(sbatch \
     --parsable \
+    --output="${logdir}/%x.o%A_%a" \
+    --error="${logdir}/%x.e%A_%a" \
     "$script_dir/cleanup_lc.sbatch" \
     "$sector" "$cam" "$ccd" "$lcdir")
 echo "  cleanup_lc job ID: $cleanup_lc_job"
@@ -133,6 +135,8 @@ for o in "${orbits[@]}"; do
     # Submit do_phot, dependent on cleanup_lc completing successfully
     do_job=$(sbatch \
         --parsable \
+        --output="${logdir}/%x.o%A_%a" \
+        --error="${logdir}/%x.e%A_%a" \
         --dependency=afterok:"$cleanup_lc_job" \
         "$script_dir/do_phot_em2.sbatch" \
         "$sector" "$cam" "$ccd" "$o" "$lcdir")
@@ -141,6 +145,8 @@ for o in "${orbits[@]}"; do
     # Submit copy_phot, dependent on do_phot completing successfully
     copy_job=$(sbatch \
         --parsable \
+        --output="${logdir}/%x.o%A_%a" \
+        --error="${logdir}/%x.e%A_%a" \
         --dependency=afterany:"$do_job" \
         "$script_dir/copy_phot_em2.sbatch" \
         "$sector" "$cam" "$ccd" "$o" "$lcdir")
@@ -164,6 +170,8 @@ dep_str="afterany:$(IFS=:; echo "${copy_job_ids[*]}")"
 
 clean_job=$(sbatch \
     --parsable \
+    --output="${logdir}/%x.o%A_%a" \
+    --error="${logdir}/%x.e%A_%a" \
     --dependency="$dep_str" \
     "$script_dir/clean_phot_em2.sbatch" \
     "$sector" "$cam" "$ccd" "$lcdir")
@@ -174,6 +182,8 @@ echo ""
 echo "[5/5] Submitting aggregate_errors (after clean_phot)..."
 agg_job=$(sbatch \
     --parsable \
+    --output="${logdir}/%x.o%A" \
+    --error="${logdir}/%x.e%A" \
     --dependency=afterany:"$clean_job" \
     "$script_dir/aggregate_errors.sbatch" \
     "$sector" "$cam" "$ccd" "$lcdir" "${do_phot_job_ids[@]}" "--" "${copy_job_ids[@]}")

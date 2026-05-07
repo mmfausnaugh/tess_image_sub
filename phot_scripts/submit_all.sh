@@ -29,7 +29,7 @@ lcdir=$2
 sectoruse=$(printf "s%04d" "$sector")
 dhome=$(pwd)
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-logdir="/lustre/research/mfausnau/logs"
+logdir="${LOG_DIR:-/lustre/research/mfausnau/logs}"
 
 # ---- Sanity checks -----------------------------------------------------------
 for var in DATA_DIR ISIS_DIR PIPELINE_DIR; do
@@ -107,6 +107,9 @@ for phot_file in "${phot_files[@]}"; do
     cleanup_lc_job=$(sbatch \
         --parsable \
         --array=0-5%6 \
+        --time=1-00:00:00 \
+        --output="${logdir}/%x.o%A_%a" \
+        --error="${logdir}/%x.e%A_%a" \
         "$script_dir/cleanup_lc.sbatch" \
         "$sector" "$cam" "$ccd" "$lcdir")
     echo "  cleanup_lc job ID: $cleanup_lc_job"
@@ -127,7 +130,9 @@ for phot_file in "${phot_files[@]}"; do
         do_job=$(sbatch \
             --parsable \
             --array=0-5%6 \
-            --time=0-4:00:00 \
+            --time=1-00:00:00 \
+            --output="${logdir}/%x.o%A_%a" \
+            --error="${logdir}/%x.e%A_%a" \
             --dependency=afterok:"$cleanup_lc_job" \
             "$script_dir/do_phot_em2.sbatch" \
             "$sector" "$cam" "$ccd" "$o" "$lcdir")
@@ -137,7 +142,9 @@ for phot_file in "${phot_files[@]}"; do
         copy_job=$(sbatch \
             --parsable \
             --array=0-5%6 \
-            --time=0-4:00:00 \
+            --time=1-00:00:00 \
+            --output="${logdir}/%x.o%A_%a" \
+            --error="${logdir}/%x.e%A_%a" \
             --dependency=afterany:"$do_job" \
             "$script_dir/copy_phot_em2.sbatch" \
             "$sector" "$cam" "$ccd" "$o" "$lcdir")
@@ -153,6 +160,9 @@ for phot_file in "${phot_files[@]}"; do
     clean_job=$(sbatch \
         --parsable \
         --array=1-20%20 \
+        --time=1-00:00:00 \
+        --output="${logdir}/%x.o%A_%a" \
+        --error="${logdir}/%x.e%A_%a" \
         --dependency="$dep_str" \
         "$script_dir/clean_phot_em2.sbatch" \
         "$sector" "$cam" "$ccd" "$lcdir")
@@ -168,6 +178,9 @@ all_clean_dep="afterany:$(IFS=:; echo "${all_clean_phot_jobs[*]}")"
 timestamp=$(date +%Y%m%d_%H%M%S)
 agg_job=$(sbatch \
     --parsable \
+    --time=1-00:00:00 \
+    --output="${logdir}/%x.o%A" \
+    --error="${logdir}/%x.e%A" \
     --dependency="$all_clean_dep" \
     "$script_dir/aggregate_errors.sbatch" \
     "$sector" "all" "all" "$lcdir" "${all_do_phot_job_ids[@]}" "--" "${all_copy_phot_job_ids[@]}")

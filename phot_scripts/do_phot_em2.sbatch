@@ -75,8 +75,8 @@ for (( ii=1; ii<=nelements; ii++ )); do
     fi
 
     # Repack images and kernel data; clean up loose fits
-    [[ -e images.tar      ]] || tar -cf  images.tar      {interp,conv,bkg}*fits
-    [[ -e kernel_data.tgz ]] || tar -czf kernel_data.tgz {kt_,kc_}*fits
+    if [[ ! -e images.tar      ]] && ls {interp,conv,bkg}*fits &>/dev/null; then tar -cf  images.tar      {interp,conv,bkg}*fits; fi
+    if [[ ! -e kernel_data.tgz ]] && ls {kt_,kc_}*fits         &>/dev/null; then tar -czf kernel_data.tgz {kt_,kc_}*fits;         fi
     rm -f kt_*fits kc_*fits
 
     # bkg_phot photometry
@@ -91,7 +91,7 @@ for (( ii=1; ii<=nelements; ii++ )); do
         cd "$dhome"
         continue
     fi
-    [[ -e kernel_data.tgz ]] || tar -czf kernel_data.tgz {kt_,kc_}*fits
+    if [[ ! -e kernel_data.tgz ]] && ls {kt_,kc_}*fits &>/dev/null; then tar -czf kernel_data.tgz {kt_,kc_}*fits; fi
     rm -f kt_*fits kc_*fits
     cd ..
 
