@@ -121,6 +121,15 @@ def clean_lc_parallel(intuple):
     reference_flux = intuple[3]
     print(ifile, metadata, multisector, reference_flux)
 
+    # Skip empty files gracefully — can happen when all slices contributing
+    # to this candidate segfaulted, or when copy_phot skipped everything.
+    # Without this guard, np.genfromtxt returns an empty array, unpacking
+    # raises ValueError, and the whole batch of candidates downstream of
+    # this call is silently abandoned.
+    if not os.path.isfile(ifile) or os.path.getsize(ifile) == 0:
+        print('WARNING: skipping empty or missing file: {}'.format(ifile))
+        return
+
     x,y,z,bkg = np.genfromtxt(ifile,unpack=1,usecols=(0,1,2,6))
     
 
@@ -163,10 +172,10 @@ def clean_lc_parallel(intuple):
         exptime[ (x2 >= 2036.10) & (x2 <=2825.4) ] = 10.0/60./24.0
         exptime[ x2 > 2825.4 ] = 200.0/3600./24.
             
-    #load up the filtered background estimate, if it exists
+    #load up the filtered background estimate, if it exists and is non-empty
     dstem,dtarget = os.path.split(wdir)
     ifile2 = os.path.join(dstem,'bkg_phot',dtarget,os.path.basename(ifile))
-    if os.path.isfile(ifile2):
+    if os.path.isfile(ifile2) and os.path.getsize(ifile2) > 0:
         x_bkg,y_bkg,z_bkg,bkg_bkg = np.genfromtxt(ifile2, unpack=1,usecols=(0,1,2,6))
 
         #remove gaps
