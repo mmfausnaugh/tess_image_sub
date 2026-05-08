@@ -99,4 +99,15 @@ for (( ii=$SLURM_ARRAY_TASK_ID; ii<=$nelements; ii+=$n_tasks )); do
 
 done
 
+# Remove lcdir directories that are now empty.  rmdir is a no-op on non-empty
+# dirs, so concurrent array tasks can all attempt this safely.
+for o_dir in "$dtarget"/o??; do
+    [[ -d "$o_dir" ]] || continue
+    for slice_dir in "$o_dir"/slice*; do
+        [[ -d "$slice_dir" ]] || continue
+        rmdir "$slice_dir/$lcdir"             2>/dev/null || true
+        rmdir "$slice_dir/bkg_phot/$lcdir"    2>/dev/null || true
+    done
+done
+
 echo "Task $SLURM_ARRAY_TASK_ID complete."

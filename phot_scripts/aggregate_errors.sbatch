@@ -13,10 +13,10 @@ set -eo pipefail
 logdir="${LOG_DIR:-/lustre/research/mfausnau/logs}"
 dhome=$(pwd)
 
-# Arguments: <sector> <cam> <ccd> <lcdir> <do_phot_jobid1> [...] -- <copy_phot_jobid1> [...]
-# For sarchast_submit_all: cam and ccd will be "all"
+# Arguments: <sector> <cam> <ccd> <lcdir> <do_phot_jobid1> [...] -- <copy_phot_jobid1> [...] -- <clean_phot_jobid1> [...]
+# For submit_all: cam and ccd will be "all"
 if [[ $# -lt 5 ]]; then
-    echo "Usage: $0 <sector> <cam> <ccd> <lcdir> <do_phot_jobid1> [...] -- <copy_phot_jobid1> [...]"
+    echo "Usage: $0 <sector> <cam> <ccd> <lcdir> <do_phot_jobid1> [...] -- <copy_phot_jobid1> [...] -- <clean_phot_jobid1> [...]"
     exit 1
 fi
 
@@ -26,15 +26,20 @@ ccd=$3
 lcdir=$4
 shift 4
 
-# Split remaining args on "--" into do_phot and copy_phot job ID lists
+# Split remaining args on "--" into do_phot, copy_phot, and clean_phot job ID lists
 do_phot_jobids=()
 copy_phot_jobids=()
+clean_phot_jobids=()
 target=do_phot_jobids
 for arg in "$@"; do
     if [[ "$arg" == "--" ]]; then
-        target=copy_phot_jobids
+        if [[ "$target" == "do_phot_jobids" ]]; then
+            target=copy_phot_jobids
+        else
+            target=clean_phot_jobids
+        fi
     else
-        eval "${target}+=("\$arg")"
+        eval "${target}+=(\"\$arg\")"
     fi
 done
 
@@ -43,8 +48,9 @@ timestamp=$(date +%Y%m%d_%H%M%S)
 outfile="$dhome/errorlog-${sectoruse}-cam${cam}-ccd${ccd}-${timestamp}.txt"
 
 echo "Aggregating errors for sector=$sectoruse cam=$cam ccd=$ccd"
-echo "do_phot job IDs:   ${do_phot_jobids[*]}"
-echo "copy_phot job IDs: ${copy_phot_jobids[*]}"
+echo "do_phot job IDs:    ${do_phot_jobids[*]}"
+echo "copy_phot job IDs:  ${copy_phot_jobids[*]}"
+echo "clean_phot job IDs: ${clean_phot_jobids[*]}"
 echo "Output: $outfile"
 
 {
@@ -52,8 +58,9 @@ echo "Output: $outfile"
     echo " Error report for sector=$sectoruse cam=$cam ccd=$ccd"
     echo " lcdir=$lcdir"
     echo " Generated: $(date)"
-    echo " do_phot job IDs:   ${do_phot_jobids[*]}"
-    echo " copy_phot job IDs: ${copy_phot_jobids[*]}"
+    echo " do_phot job IDs:    ${do_phot_jobids[*]}"
+    echo " copy_phot job IDs:  ${copy_phot_jobids[*]}"
+    echo " clean_phot job IDs: ${clean_phot_jobids[*]}"
     echo "========================================================"
     echo ""
 
@@ -129,10 +136,38 @@ echo "Output: $outfile"
         echo ""
     fi
 
+    echo "--- clean_phot errors ---"
+    echo ""
+
+    clean_errors_found=0
+    for jobid in "${clean_phot_jobids[@]}"; do
+        mapfile -t efiles < <(ls "$logdir/clean_phot.e${jobid}_"* 2>/dev/null || true)
+
+        if [[ ${#efiles[@]} -eq 0 ]]; then
+            echo "WARNING: No error log files found for clean_phot job $jobid"
+            continue
+        fi
+
+        for efile in "${efiles[@]}"; do
+            [[ -s "$efile" ]] || continue
+            task_id=$(basename "$efile" | grep -oP '(?<=_)\d+$')
+            echo "--- clean_phot job ${jobid}, task ${task_id} ---"
+            cat "$efile"
+            echo ""
+            (( clean_errors_found++ )) || true
+        done
+    done
+
+    if [[ $clean_errors_found -eq 0 ]]; then
+        echo "(No clean_phot errors found)"
+        echo ""
+    fi
+
     echo "========================================================"
     echo " do_phot tasks with errors:    $do_errors_found"
     echo " Total failed phot2.csh calls: $total_failed"
     echo " copy_phot tasks with errors:  $copy_errors_found"
+    echo " clean_phot tasks with errors: $clean_errors_found"
     echo "========================================================"
 
 } > "$outfile"

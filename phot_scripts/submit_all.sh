@@ -183,8 +183,21 @@ agg_job=$(sbatch \
     --error="${logdir}/%x.e%A" \
     --dependency="$all_clean_dep" \
     "$script_dir/aggregate_errors.sbatch" \
-    "$sector" "all" "all" "$lcdir" "${all_do_phot_job_ids[@]}" "--" "${all_copy_phot_job_ids[@]}")
+    "$sector" "all" "all" "$lcdir" "${all_do_phot_job_ids[@]}" "--" "${all_copy_phot_job_ids[@]}" "--" "${all_clean_phot_jobs[@]}")
 echo "  aggregate_errors job ID: $agg_job"
+
+# ---- Submit purge_lc after aggregate_errors ----------------------------------
+echo ""
+echo "Submitting purge_lc (after aggregate_errors)..."
+purge_job=$(sbatch \
+    --parsable \
+    --time=1-00:00:00 \
+    --output="${logdir}/%x.o%A_%a" \
+    --error="${logdir}/%x.e%A_%a" \
+    --dependency=afterany:"$agg_job" \
+    "$script_dir/purge_lc.sbatch" \
+    "$sector" "all" "all" "$lcdir")
+echo "  purge_lc job ID: $purge_job"
 
 # ---- Summary -----------------------------------------------------------------
 echo ""
@@ -192,6 +205,7 @@ echo "======================================================"
 echo " All cam-ccd combos submitted."
 echo " cleanup_lc jobs : ${all_cleanup_lc_jobs[*]}"
 echo " clean_phot jobs : ${all_clean_phot_jobs[*]}"
+echo " purge_lc job    : $purge_job"
 echo ""
 echo " Monitor with:"
 echo "   squeue -u \$USER"

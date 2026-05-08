@@ -179,15 +179,27 @@ echo "    clean_phot job ID: $clean_job  (after ${copy_job_ids[*]})"
 
 # ---- Step 5: Submit aggregate_errors after clean_phot ------------------------
 echo ""
-echo "[5/5] Submitting aggregate_errors (after clean_phot)..."
+echo "[5/6] Submitting aggregate_errors (after clean_phot)..."
 agg_job=$(sbatch \
     --parsable \
     --output="${logdir}/%x.o%A" \
     --error="${logdir}/%x.e%A" \
     --dependency=afterany:"$clean_job" \
     "$script_dir/aggregate_errors.sbatch" \
-    "$sector" "$cam" "$ccd" "$lcdir" "${do_phot_job_ids[@]}" "--" "${copy_job_ids[@]}")
+    "$sector" "$cam" "$ccd" "$lcdir" "${do_phot_job_ids[@]}" "--" "${copy_job_ids[@]}" "--" "$clean_job")
 echo "    aggregate_errors job ID: $agg_job"
+
+# ---- Step 6: Submit purge_lc after aggregate_errors --------------------------
+echo ""
+echo "[6/6] Submitting purge_lc (after aggregate_errors)..."
+purge_job=$(sbatch \
+    --parsable \
+    --output="${logdir}/%x.o%A_%a" \
+    --error="${logdir}/%x.e%A_%a" \
+    --dependency=afterany:"$agg_job" \
+    "$script_dir/purge_lc.sbatch" \
+    "$sector" "$cam" "$ccd" "$lcdir")
+echo "    purge_lc job ID: $purge_job"
 
 # ---- Summary -----------------------------------------------------------------
 echo ""
@@ -199,7 +211,7 @@ echo "   cleanup_lc[$cleanup_lc_job]"
 for i in "${!orbits[@]}"; do
     echo "     -> ${orbits[$i]}: do_phot -> copy_phot[${copy_job_ids[$i]}]"
 done
-echo "   All copy_phot -> clean_phot[$clean_job] -> aggregate_errors[$agg_job]"
+echo "   All copy_phot -> clean_phot[$clean_job] -> aggregate_errors[$agg_job] -> purge_lc[$purge_job]"
 echo ""
 echo " Monitor with:"
 echo "   squeue -u \$USER"
