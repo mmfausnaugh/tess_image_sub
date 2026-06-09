@@ -3,7 +3,7 @@
 #this script will pull the latest download scripts from MAST
 #the MAST scripts use curl to grab the data
 
-set -euo
+set -uo
 
 sector=$1
 segment=$2

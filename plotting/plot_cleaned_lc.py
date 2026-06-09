@@ -29,9 +29,10 @@ def get_meta_data(ifile, metafile, decimal=False):
         cat = AsciiCol(metafile, sector, int(cam), sexagesimal=True)
 
     print(ifile)
-    obj_search = re.search('lc_(.*)_cleaned',ifile)
+    obj_search = re.search('lc_(.*)_cleaned',os.path.basename(ifile) )
     obj = obj_search.group(1)
     m = np.in1d(cat.obj_name, obj)
+    print(obj, cat.obj_name, m)
     return {'name':cat.obj_name[m][0],            
             'mag':cat.mag[m][0],
             'sector':sector,

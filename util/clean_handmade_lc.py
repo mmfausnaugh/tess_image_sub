@@ -128,8 +128,11 @@ def clean_lc_parallel(intuple):
     wdir = os.path.abspath(os.path.dirname(ifile))
 
     if not multisector:
-        sector_idx = wdir.find('sector')
-        sector     = wdir[sector_idx : sector_idx+8]
+        sector_search = re.search('sector(\d*)', wdir)
+        sector = sector_search.group(1)
+        
+        #sector_idx = wdir.find('sector')
+        #sector     = wdir[sector_idx : sector_idx+8]
         #sector_idx = wdir.find('sector')
         #sector_search = re.search('s(\d\d\d\d)',wdir)
         

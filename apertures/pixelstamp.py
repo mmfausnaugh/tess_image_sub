@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.spatial import KDTree
 from scipy.ndimage import maximum_filter
-import  photutils  as phot
+import  photutils.aperture  as phot
 import matplotlib.pyplot as plt
 from copy import deepcopy
 import os

@@ -41,13 +41,13 @@ for (( ii=1; ii<=$nelements; ii++ )); do
 	    if [[ $ii -eq 1 ]]; then
 
 		#safety, in case there is an old phot.data
-		if [[ -e "$duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"/phot.data ]]; then
-		    echo "phot.data already present in $duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"".  You should delete this file before running do_phot_em2.sbatch; otherwise a race condition will lead to some processes running photometry on the old phot.data.  Exiting...";
+		#if [[ -e "$duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"/phot.data ]]; then
+		#    echo "phot.data already present in $duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"".  You should delete this file before running do_phot_em2.sbatch; otherwise a race condition will lead to some processes running photometry on the old phot.data.  Exiting...";
 		    
-		    exit 1
-		fi
+		#    exit 1
+		#fi
 
-		
+		rm  -fr "$duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"/phot.data
 		echo "copying phot.data " $SLURM_ARRAY_TASK_ID
 		cp "sector$sector""/cam$cam""_ccd$ccd""/phot.data"   "$duse""/$sectoruse""/cam$cam""-ccd$ccd""/$o"
 	    fi

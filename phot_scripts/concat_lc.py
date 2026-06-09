@@ -32,8 +32,9 @@ def read_data(indir,lcstem):
     ))
     infiles.sort()
     output = {}
-    for infile in infiles:
-        #print(infile)
+    for fileno,infile in enumerate(infiles):
+        fixdigits = len(str(len(infiles)))
+        #print(f"fileno:{fixdigits}  out of {len(infiles)}")#,end='\r')
         d = np.genfromtxt(infile)
         output[ os.path.basename(infile) ] = d
 
@@ -100,7 +101,7 @@ if __name__ == '__main__':
                            "cam"+str(cam)+"-ccd"+str(ccd),
                            )
 
-    print(dout)
+    #print(dout)
     if os.path.isdir(os.path.join(dout, lcdir)):
         pass
     else:
@@ -133,12 +134,18 @@ if __name__ == '__main__':
         #over ride option if there really shouldn't be data in the first slice,
         #for example scattered light.  This happened is s87, cam1, ccd3, o1a.
         if args.override==False:
-            print('Error found---first director (o1a/slice0000) is empty')
+            print('Error found---first directory (o1a/slice0000) is empty')
             sys.exit()
 
 
     #what to do for override here?
-    for lc in results[0].keys():
+    for r in results:
+        print(len(r.keys()))
+        if len(r.keys()) > 0:
+            ruse = r
+            break
+        
+    for lc in ruse.keys():
         print(lc)
         output = []
         output_bkg = []
@@ -146,7 +153,7 @@ if __name__ == '__main__':
         for ii,r in enumerate(results):
             #print(ii,r)
             try:
-                print(indirs[ii], lc)
+                #print(indirs[ii], lc)
                 output.append( r[lc] )
                 output_bkg.append( results_bkg[ii][lc] )
             except KeyError:
@@ -187,6 +194,8 @@ if __name__ == '__main__':
         np.savetxt(output_file2, output_bkg)
         #check that number of entries in output and output_bkg
         #match what is in the save file
+
+        print(output_file, output_file2)
         
         n_output = np.shape(output)[0]
         n_output_bkg = np.shape(output_bkg)[0]
@@ -200,9 +209,23 @@ if __name__ == '__main__':
             
         print('n saved (lc, bkg): ', n_output_saved, n_output_bkg_saved)
         print('n in data/tica/ (lc, bkg): ', n_output, n_output_bkg)
-        assert (n_output_saved == n_output)
-        assert (n_output_bkg_saved == n_output_bkg)
-        assert (n_output_saved == n_output_bkg_saved)
+        try:
+            assert (n_output_saved == n_output)
+        except AssertionError:
+            print('error in ', dtarget)
+            raise
+        try:
+            assert (n_output_bkg_saved == n_output_bkg)
+        except AssertionError:
+            print('error in ', dtarget)
+            raise
+
+        try:
+            assert (n_output_saved == n_output_bkg_saved)
+        except AssertionError:
+            print('error in ', dtarget)
+            raise
+
         
 
     

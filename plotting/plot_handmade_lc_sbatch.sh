@@ -9,7 +9,7 @@
 #SBATCH --cpus-per-task 2 
 #SBATCH --ntasks=16
 #SBATCH --ntasks=1
-#SBATCH --time=0-03:00:00
+#SBATCH --time=0-00:10:00
 
 coordfile=$1
 indir=$2

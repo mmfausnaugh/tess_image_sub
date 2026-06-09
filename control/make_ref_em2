@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-set -euo
+set -uo
 
 for i in 1 2 3 4; do
+	echo "1st loop"
     for j in 1 2 3 4; do
+	    echo "2nd loop"
 	cd cam${i}-ccd${j}/o1a
 	for f in $(cat ref_list); do
 	    cp slice*/interp_"$f" interp_"$f"

@@ -47,6 +47,19 @@ def make_rms(inlist ):
 
         if lookup_dict is not None:
             fin = int(infile.split('-')[2])
+        ##Added by RahulE
+            if fin not in lookup_dict:
+                print("ERROR: fin not found in lookup_dict")
+                print("infile =", infile)
+                print("fin =", fin)
+                print("Number of keys in lookup_dict =", len(lookup_dict))
+                print("First 20 keys =", list(lookup_dict.keys())[:20])
+                print("Min key =", min(lookup_dict.keys()))
+                print("Max key =", max(lookup_dict.keys()))
+                continue
+        ##RahulE edits end here
+
+
             slice_use = lookup_dict[fin]
 
             print(os.getcwd(), slice_use)
