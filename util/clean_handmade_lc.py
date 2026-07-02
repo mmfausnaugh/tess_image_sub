@@ -148,8 +148,8 @@ def clean_lc_parallel(intuple):
         #convert to BTJD
         #would like to save x2, for look up later
         #print(metadata['RA'],metadata['DEC'])
-        if int(sector[-2:]) < 56:
-            if int(sector[-2:]) < 27:
+        if int(sector) < 56:
+            if int(sector) < 27:
                 exptime = 30.0/60./24.0
             else:
                 exptime = 10.0/60./24.0

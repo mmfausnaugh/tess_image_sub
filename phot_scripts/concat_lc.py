@@ -124,7 +124,7 @@ if __name__ == '__main__':
     results = []
     results_bkg = []
     for indir in indirs:
-        #print(indir)
+        #print(indir, lcdir)
         out1, out2 = read_data(indir,lcdir)
         results.append( out1  )
         results_bkg.append( out2 )
@@ -139,11 +139,13 @@ if __name__ == '__main__':
 
 
     #what to do for override here?
+    n_keys_max = -1
     for r in results:
-        print(len(r.keys()))
-        if len(r.keys()) > 0:
+        n_keys = len(r.keys())
+        #print(n_keys)
+        if n_keys > n_keys_max:
+            n_keys_max = n_keys
             ruse = r
-            break
         
     for lc in ruse.keys():
         print(lc)
@@ -153,11 +155,18 @@ if __name__ == '__main__':
         for ii,r in enumerate(results):
             #print(ii,r)
             try:
-                #print(indirs[ii], lc)
                 output.append( r[lc] )
-                output_bkg.append( results_bkg[ii][lc] )
             except KeyError:
                 print('error! no key for',indirs[ii], lc)
+                print('passing over this directory')
+                #print(os.getcwd())
+                #print(lc)
+                #raise
+
+            try:
+                output_bkg.append( results_bkg[ii][lc] )
+            except KeyError:
+                print('error! no key for',indirs[ii] + '/bkg_phot',lc)
                 print('passing over this directory')
                 #print(os.getcwd())
                 #print(lc)
@@ -170,7 +179,26 @@ if __name__ == '__main__':
         output = output[idx]
         idx = np.argsort(output_bkg[:,0])
         output_bkg = output_bkg[idx]
-        
+
+        #remove nans from output
+        ##m_nans = np.isnan(output)
+        ##print(m_nans.any())
+        ##print(m_nans)
+        ##row_idx = np.where(m_nans == True)[0][0]
+        ##print(row_idx)
+        ##output = np.delete(output, row_idx,axis=0)
+        ###output_bkg = np.delete(output_bkg,row_idx,axis=0)
+        ##
+        ###remove nans from output_bkg
+        ##m_nans = np.isnan(output_bkg)
+        ##row_idx = np.where(m_nans == True)[0][0]
+        ##print(row_idx)
+        ###output = np.delete(output,row_idx,axis=0)
+        ##output_bkg = np.delete(output_bkg,row_idx,axis=0)
+
+
+
+        #remove duplicates
         output = np.unique(output, axis=0)
         output_bkg = np.unique(output_bkg, axis=0)
 
