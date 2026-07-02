@@ -24,14 +24,31 @@ dtarget_base="${DATA_DIR}/${sectoruse}"
 
 echo "purge_lc: sector=$sectoruse cam=$cam ccd=$ccd lcdir=$lcdir  task=$SLURM_ARRAY_TASK_ID"
 
-# Build flat list of all slice directories to process.
 # cam/ccd may be "all" (submit_all path) or a specific number.
 if [[ "$cam" == "all" ]]; then
+    mapfile -t orbit_dirs < <(ls -d "$dtarget_base"/cam*-ccd*/o?? 2>/dev/null)
     mapfile -t all_slices < <(ls -d "$dtarget_base"/cam*-ccd*/o??/slice* 2>/dev/null)
 else
+    mapfile -t orbit_dirs < <(ls -d "$dtarget_base/cam${cam}-ccd${ccd}"/o?? 2>/dev/null)
     mapfile -t all_slices < <(ls -d "$dtarget_base/cam${cam}-ccd${ccd}"/o??/slice* 2>/dev/null)
 fi
 
+# Remove orbit-level phot.data files copied in by submit_phot_pipeline.sh or
+# submit_all.sh. Only one array task does this shared cleanup.
+if [[ "$SLURM_ARRAY_TASK_ID" -eq 0 ]]; then
+    phot_count=0
+    for orbit_dir in "${orbit_dirs[@]}"; do
+        pd="$orbit_dir/phot.data"
+        if [[ -e "$pd" ]]; then
+            echo "Removing: $pd"
+            rm -f "$pd"
+            (( phot_count++ )) || true
+        fi
+    done
+    echo "Removed $phot_count phot.data file(s)."
+fi
+
+# Build flat list of all slice directories to process.
 nelements=${#all_slices[@]}
 
 if [[ $nelements -eq 0 ]]; then
