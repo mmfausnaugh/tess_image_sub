@@ -56,7 +56,7 @@ cam=$((  (${SLURM_ARRAY_TASK_ID}-1)/4 +1))
 ccd=$((  (${SLURM_ARRAY_TASK_ID}-1)%4 +1))
 cd "cam$cam""-ccd$ccd"/"$o"
 pwd
-echo "running make_dates in cam$i""-ccd$j"
+echo "running make_dates in cam${cam}""-ccd${ccd}"
 #moved to downlowd scripts
 #for f in ../hlsp_tica_tess*fits; do 
 #    mv $f .

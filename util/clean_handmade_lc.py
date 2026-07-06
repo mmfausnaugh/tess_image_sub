@@ -137,8 +137,11 @@ def clean_lc_parallel(intuple):
     wdir = os.path.abspath(os.path.dirname(ifile))
 
     if not multisector:
-        sector_idx = wdir.find('sector')
-        sector     = wdir[sector_idx : sector_idx+8]
+        sector_search = re.search('sector(\d*)', wdir)
+        sector = sector_search.group(1)
+        
+        #sector_idx = wdir.find('sector')
+        #sector     = wdir[sector_idx : sector_idx+8]
         #sector_idx = wdir.find('sector')
         #sector_search = re.search('s(\d\d\d\d)',wdir)
         
@@ -154,8 +157,8 @@ def clean_lc_parallel(intuple):
         #convert to BTJD
         #would like to save x2, for look up later
         #print(metadata['RA'],metadata['DEC'])
-        if int(sector[-2:]) < 56:
-            if int(sector[-2:]) < 27:
+        if int(sector) < 56:
+            if int(sector) < 27:
                 exptime = 30.0/60./24.0
             else:
                 exptime = 10.0/60./24.0

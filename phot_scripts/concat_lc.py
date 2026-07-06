@@ -32,8 +32,9 @@ def read_data(indir,lcstem):
     ))
     infiles.sort()
     output = {}
-    for infile in infiles:
-        #print(infile)
+    for fileno,infile in enumerate(infiles):
+        fixdigits = len(str(len(infiles)))
+        #print(f"fileno:{fixdigits}  out of {len(infiles)}")#,end='\r')
         d = np.genfromtxt(infile)
         output[ os.path.basename(infile) ] = d
 
@@ -100,7 +101,7 @@ if __name__ == '__main__':
                            "cam"+str(cam)+"-ccd"+str(ccd),
                            )
 
-    print(dout)
+    #print(dout)
     if os.path.isdir(os.path.join(dout, lcdir)):
         pass
     else:
@@ -123,7 +124,7 @@ if __name__ == '__main__':
     results = []
     results_bkg = []
     for indir in indirs:
-        #print(indir)
+        #print(indir, lcdir)
         out1, out2 = read_data(indir,lcdir)
         results.append( out1  )
         results_bkg.append( out2 )
@@ -133,12 +134,20 @@ if __name__ == '__main__':
         #over ride option if there really shouldn't be data in the first slice,
         #for example scattered light.  This happened is s87, cam1, ccd3, o1a.
         if args.override==False:
-            print('Error found---first director (o1a/slice0000) is empty')
+            print('Error found---first directory (o1a/slice0000) is empty')
             sys.exit()
 
 
     #what to do for override here?
-    for lc in results[0].keys():
+    n_keys_max = -1
+    for r in results:
+        n_keys = len(r.keys())
+        #print(n_keys)
+        if n_keys > n_keys_max:
+            n_keys_max = n_keys
+            ruse = r
+        
+    for lc in ruse.keys():
         print(lc)
         output = []
         output_bkg = []
@@ -146,11 +155,18 @@ if __name__ == '__main__':
         for ii,r in enumerate(results):
             #print(ii,r)
             try:
-                print(indirs[ii], lc)
                 output.append( r[lc] )
-                output_bkg.append( results_bkg[ii][lc] )
             except KeyError:
                 print('error! no key for',indirs[ii], lc)
+                print('passing over this directory')
+                #print(os.getcwd())
+                #print(lc)
+                #raise
+
+            try:
+                output_bkg.append( results_bkg[ii][lc] )
+            except KeyError:
+                print('error! no key for',indirs[ii] + '/bkg_phot',lc)
                 print('passing over this directory')
                 #print(os.getcwd())
                 #print(lc)
@@ -163,7 +179,26 @@ if __name__ == '__main__':
         output = output[idx]
         idx = np.argsort(output_bkg[:,0])
         output_bkg = output_bkg[idx]
-        
+
+        #remove nans from output
+        ##m_nans = np.isnan(output)
+        ##print(m_nans.any())
+        ##print(m_nans)
+        ##row_idx = np.where(m_nans == True)[0][0]
+        ##print(row_idx)
+        ##output = np.delete(output, row_idx,axis=0)
+        ###output_bkg = np.delete(output_bkg,row_idx,axis=0)
+        ##
+        ###remove nans from output_bkg
+        ##m_nans = np.isnan(output_bkg)
+        ##row_idx = np.where(m_nans == True)[0][0]
+        ##print(row_idx)
+        ###output = np.delete(output,row_idx,axis=0)
+        ##output_bkg = np.delete(output_bkg,row_idx,axis=0)
+
+
+
+        #remove duplicates
         output = np.unique(output, axis=0)
         output_bkg = np.unique(output_bkg, axis=0)
 
@@ -187,6 +222,8 @@ if __name__ == '__main__':
         np.savetxt(output_file2, output_bkg)
         #check that number of entries in output and output_bkg
         #match what is in the save file
+
+        print(output_file, output_file2)
         
         n_output = np.shape(output)[0]
         n_output_bkg = np.shape(output_bkg)[0]
@@ -200,9 +237,23 @@ if __name__ == '__main__':
             
         print('n saved (lc, bkg): ', n_output_saved, n_output_bkg_saved)
         print('n in data/tica/ (lc, bkg): ', n_output, n_output_bkg)
-        assert (n_output_saved == n_output)
-        assert (n_output_bkg_saved == n_output_bkg)
-        assert (n_output_saved == n_output_bkg_saved)
+        try:
+            assert (n_output_saved == n_output)
+        except AssertionError:
+            print('error in ', dtarget)
+            raise
+        try:
+            assert (n_output_bkg_saved == n_output_bkg)
+        except AssertionError:
+            print('error in ', dtarget)
+            raise
+
+        try:
+            assert (n_output_saved == n_output_bkg_saved)
+        except AssertionError:
+            print('error in ', dtarget)
+            raise
+
         
 
     

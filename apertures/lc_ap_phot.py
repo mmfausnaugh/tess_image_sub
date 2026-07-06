@@ -4,7 +4,7 @@ from astropy.io import fits
 import argparse
 import sys
 import os
-
+sys.path.insert(0, os.environ.get('PIPELINE_DIR') )
 import matplotlib.pyplot as plt
 
 

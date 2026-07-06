@@ -17,7 +17,7 @@ ccd=$3
 coordfile=$4
 indir=$5
 
-echo "check: " $sector $suse $cam $ccd $ccordifle $indir
+echo "check: " $sector $suse $cam $ccd $coordifle $indir
 
 fluxcal.py --photfile ./phot.data --infiles ${DATA_DIR}/s"$suse"/"cam$cam""-ccd$ccd"/ref.fits 
 mv ref_gaussian_psf_flux.txt "$indir"/ref_gaussian_psf_flux.txt
