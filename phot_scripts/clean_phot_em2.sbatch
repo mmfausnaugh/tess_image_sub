@@ -1,107 +1,113 @@
 #!/usr/bin/env bash
-
-
-####issue one, need to fill in these variables
-### fix by removing environment variables....
 #SBATCH --job-name="clean_phot"
-#SBATCH --output=//lustre/research/mfausnau/logs/%x.o%A_%a
+#SBATCH --output=/lustre/research/mfausnau/logs/%x.o%A_%a
 #SBATCH --error=/lustre/research/mfausnau/logs/%x.e%A_%a
 #SBATCH --partition=nocona
-#SBATCH --nodes 1
-#SBATCH --cpus-per-task 1
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --array=1-500
-#SBATCH --time=90
+#SBATCH --array=1-200%50
+#SBATCH --time=0-1:30:00
 
-set -eo
+set -eo pipefail
+
+# Number of array tasks — used as modulo for file distribution.
+# This array is 1-based (--array=1-N), so n_tasks = SLURM_ARRAY_TASK_MAX directly.
+n_tasks=$SLURM_ARRAY_TASK_MAX
 
 duse=$DATA_DIR
-dhome=$(pwd);
-
+dhome=$(pwd)
 sector=$1
-sectoruse=$(printf "s%04d" $1)
-echo "sector use:"  $sectoruse
+sectoruse=$(printf "s%04d" "$1")
 cam=$2
 ccd=$3
-#not needed here, check against all orbit segments
-#o=$4
+lcdir=$4
 
-dtarget=$DATA_DIR"/$sectoruse""/cam$2""-ccd$3"
+echo "sector use: $sectoruse  cam: $cam  ccd: $ccd  lcdir: $lcdir"
 
+dtarget="$duse/$sectoruse/cam${cam}-ccd${ccd}"
+outbase="$dhome/sector${sector}/cam${cam}_ccd${ccd}"
 
-infiles=( $(ls "$dhome""/sector$1""/cam$2""_ccd$3"/lc/lc_* | grep -v *png | grep -v *cleaned | awk -F"/" '{print $NF}' )) 
+# Build file list excluding .png and already-cleaned files
+mapfile -t infiles < <(
+    ls "$outbase/$lcdir/lc_"* 2>/dev/null \
+    | grep -v "\.png$" \
+    | grep -v "\.cleaned$" \
+    | awk -F"/" '{print $NF}'
+)
 nelements=${#infiles[@]}
-echo $nelements
-for (( ii=1; ii<=$nelements; ii++ )); do
-    if [[ $SLURM_ARRAY_TASK_ID -gt $nelements ]]; then
-	exit
-    elif [[ $((ii%500)) -eq $SLURM_ARRAY_TASK_ID ]]; then
+echo "Total lc files to process: $nelements"
 
+if [[ $nelements -eq 0 ]]; then
+    echo "ERROR: No lc_* files found in $outbase/$lcdir/"
+    exit 1
+fi
 
-	f=${infiles[$((ii-1))]}
-	echo $f  $ii  $SLURM_ARRAY_TASK_ID
+for (( ii=$SLURM_ARRAY_TASK_ID; ii<=$nelements; ii+=$n_tasks )); do
+    f="${infiles[$((ii-1))]}"
+    echo "Processing: $f  (ii=$ii  task=$SLURM_ARRAY_TASK_ID)"
 
-        sort -nuk1 "$dhome""/sector$1""/cam$2""_ccd$3""/lc"/$f > "$f"_tmp
-        mv "$f"_tmp "$dhome""/sector$1""/cam$2""_ccd$3""/lc"/$f
-        sort -nuk1 "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc"/$f > "$f"_tmp2
-        mv "$f"_tmp2 $f
+    lc_main="$outbase/$lcdir/$f"
+    lc_bkg="$outbase/bkg_phot/$lcdir/$f"
 
-	
-	ncheck=$(wc "$dhome""/sector$1""/cam$2""_ccd$3""/lc"/$f | awk '{print $1}')
-	ncheck2=$(wc "$dhome""/sector$1""/cam$2""_ccd$3""/bkg_phot/lc/"$f | awk '{print $1}')
-	printf "%20s %20s\n" "N_lc_home"  "N_bkg_lc_home"
-	printf "%20s %20s\n" $ncheck $ncheck2
+    # Sort and deduplicate by first column (timestamp), in-place
+    sort -nuk1 "$lc_main" > "${lc_main}.tmp" && mv "${lc_main}.tmp" "$lc_main"
+    sort -nuk1 "$lc_bkg"  > "${lc_bkg}.tmp"  && mv "${lc_bkg}.tmp"  "$lc_bkg"
 
+    ncheck=$( wc -l < "$lc_main" )
+    ncheck2=$( wc -l < "$lc_bkg" )
 
-	#make sure that all lines in /data/tess/image_sub have been concated
-	nlines=0
-	cd "$dtarget"
-	for o in o1a o1b o2a o2b; do
-	    cd $o
-	    for slice in $(ls -d slice*); do
-		cd $slice
-		if [ -e "lc/$f" ]; then
-		    jj=$(wc "lc/$f" | awk '{print $1}')
-		    let nlines=$(($nlines + $jj))
-		fi
-		cd ..
-	    done
-	    cd ..
-	done
+    printf "%20s %20s\n"   "N_lc_main"  "N_lc_bkg"
+    printf "%20s %20s\n"   "$ncheck"    "$ncheck2"
 
-       
-	printf "%20s %20s %20s\n" "N_lc_home" "N_bkg_lc_home"  "N_lines_found_in_slices"
-	printf "%20s %20s %20s\n" $ncheck   $ncheck2   $nlines
-    	echo "all the counting is done"
-	if [[ $ncheck == $ncheck2 ]]; then
-	    echo "equal background and lc data points"
-	    if [[ $ncheck == $nlines ]]; then
-		echo "$f passed, deleted from slice directories"
-		for o in o1a o1b o2a o2b; do 
-		    cd $o
-		    for slice in $(ls -d slice*); do
-			cd $slice
-			rm lc/"$f"
-			if [ -d bkg_phot ]; then
-			    cd bkg_phot
-			    rm lc/"$f"
-			    cd ../
-			fi
-			cd ../
-		    done
-		    cd ..
-		done
-		
-	    fi
-	fi
-	
-    	echo "last fi clause"
-	
+    # Count total lines across all orbit/slice directories in DATA_DIR
+    nlines=0
+    for o_dir in "$dtarget"/o??; do
+        [[ -d "$o_dir" ]] || continue
+        for slice_dir in "$o_dir"/slice*; do
+            [[ -d "$slice_dir" ]] || continue
+            lc_slice="$slice_dir/$lcdir/$f"
+            if [[ -e "$lc_slice" ]]; then
+                jj=$( wc -l < "$lc_slice" )
+                (( nlines += jj )) || true
+            fi
+        done
+    done
+
+    printf "%20s %20s %20s\n" "N_lc_main" "N_lc_bkg" "N_lines_in_slices"
+    printf "%20s %20s %20s\n" "$ncheck"   "$ncheck2"  "$nlines"
+
+    if [[ "$ncheck" -ne "$ncheck2" ]]; then
+        echo "WARNING: $f — main ($ncheck) and bkg ($ncheck2) line counts differ. Skipping deletion."
+        continue
     fi
-    
-    cd $dhome
-    
+
+    if [[ "$ncheck" -ne "$nlines" ]]; then
+        echo "WARNING: $f — aggregated ($ncheck) != sum of slices ($nlines). Skipping deletion."
+        continue
+    fi
+
+    echo "$f passed validation. Removing from slice directories."
+    for o_dir in "$dtarget"/o??; do
+        [[ -d "$o_dir" ]] || continue
+        for slice_dir in "$o_dir"/slice*; do
+            [[ -d "$slice_dir" ]] || continue
+            rm -f "$slice_dir/$lcdir/$f"
+            [[ -d "$slice_dir/bkg_phot" ]] && rm -f "$slice_dir/bkg_phot/$lcdir/$f"
+        done
+    done
+
 done
 
+# Remove lcdir directories that are now empty.  rmdir is a no-op on non-empty
+# dirs, so concurrent array tasks can all attempt this safely.
+for o_dir in "$dtarget"/o??; do
+    [[ -d "$o_dir" ]] || continue
+    for slice_dir in "$o_dir"/slice*; do
+        [[ -d "$slice_dir" ]] || continue
+        rmdir "$slice_dir/$lcdir"             2>/dev/null || true
+        rmdir "$slice_dir/bkg_phot/$lcdir"    2>/dev/null || true
+    done
+done
 
-
+echo "Task $SLURM_ARRAY_TASK_ID complete."
