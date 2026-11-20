@@ -1,0 +1,1 @@
+../phot_scripts/submit_all.sh

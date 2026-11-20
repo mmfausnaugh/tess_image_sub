@@ -1,0 +1,1 @@
+../plotting/plot_handmade_lc_sbatch.sh
