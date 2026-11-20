@@ -28,7 +28,8 @@ lcdir=$2
 
 sectoruse=$(printf "s%04d" "$sector")
 dhome=$(pwd)
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+#script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+script_dir=${PIPELINE_DIR}/phot_scripts
 logdir="${LOG_DIR:-/lustre/research/mfausnau/logs}"
 
 # ---- Sanity checks -----------------------------------------------------------
